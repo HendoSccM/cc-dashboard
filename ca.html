@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CA / Communications Accountability </title>
+<style>
+:root { color-scheme: light; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f2f6; color: #1a2332; font-size: 13px; line-height: 1.4; }
+
+/* department switcher */
+.dept-bar { background:#091d42; }
+.dept-bar-inner { display:flex; align-items:center; gap:18px; padding:8px 22px; flex-wrap:wrap; }
+.dept-brand { font-weight:800; font-size:12px; letter-spacing:.3px; color:rgba(255,255,255,.9); }
+.dept-links { display:flex; gap:6px; align-items:center; flex-wrap:wrap; }
+.dept-links a { color:rgba(255,255,255,.75); text-decoration:none; font-size:12px; font-weight:700; padding:5px 12px; border-radius:6px; }
+.dept-links a:hover { background:rgba(255,255,255,.12); color:#fff; }
+.dept-links a.active { background:#f5a623; color:#091d42; }
+
+.preview-banner { background:#fde68a; color:#92400e; font-size:12px; font-weight:700; text-align:center; padding:6px 12px; }
+
+.header { background: linear-gradient(120deg, #0d2640, #1a4e7a); color: #fff; padding: 14px 22px; display: flex; justify-content: space-between; align-items: center; }
+.header h1 { font-size: 16px; font-weight: 700; }
+.header p  { font-size: 11px; opacity: .6; margin-top: 2px; }
+.pill { padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+.pill-month { background: #e74c3c; color: #fff; }
+.pill-date  { background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.2); }
+.header-right { display:flex; gap:8px; align-items:center; }
+
+.formula-box { background: #eef6ff; border-bottom: 2px solid #bfdbfe; padding: 10px 22px; font-size: 12px; color: #1e40af; display: flex; align-items: center; gap: 10px; flex-wrap:wrap; }
+.formula-box strong { color: #1e3a8a; }
+.formula-eq { background: #fff; border: 1px solid #bfdbfe; border-radius: 5px; padding: 3px 10px; font-weight: 700; font-size: 12px; }
+
+.cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; padding: 14px 22px 0; }
+.card { background: #fff; border-radius: 8px; padding: 12px 16px; box-shadow: 0 1px 4px rgba(0,0,0,.07); border-left: 4px solid #ddd; }
+.card.blue { border-left-color:#2980b9; } .card.red { border-left-color:#e74c3c; } .card.amber { border-left-color:#f59e0b; } .card.purple { border-left-color:#8e44ad; }
+.card .cl { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.7px; color:#888; }
+.card .cv { font-size:26px; font-weight:800; line-height:1.1; margin:4px 0 2px; color:#1a2332; }
+.card .cs { font-size:11px; color:#999; }
+
+.tabs { display:flex; gap:3px; padding:14px 22px 0; }
+.tab-btn { padding:8px 18px; border-radius:7px 7px 0 0; cursor:pointer; font-size:12px; font-weight:700; color:#555; background:#dde1ea; border:1px solid #cdd1dc; border-bottom:none; }
+.tab-btn.active { background:#fff; color:#0d2640; border-color:#c8cdd8; }
+.content-wrap { background:#fff; margin:0 22px 22px; border:1px solid #c8cdd8; border-radius:0 8px 8px 8px; box-shadow:0 2px 8px rgba(0,0,0,.06); padding:20px; }
+.tab-pane { display:none; } .tab-pane.active { display:block; }
+.last-updated { font-size:11px; color:#9ca3af; margin-bottom:16px; } .last-updated span { color:#374151; font-weight:600; }
+
+.acct-table { width:100%; border-collapse:collapse; border:1px solid #e5e7eb; border-radius:8px; overflow:hidden; }
+.acct-table thead th { background:#f4f6fa; padding:9px 10px; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; color:#6b7280; text-align:center; border-bottom:2px solid #e4e8ef; white-space:nowrap; }
+.acct-table thead th:first-child { text-align:left; min-width:130px; }
+.acct-table thead th.th-target { background:#1a4e7a; color:#fff; }
+.acct-table thead th.th-left { background:#0d6e6e; color:#fff; }
+.acct-table tbody td { padding:10px; border-bottom:1px solid #f0f2f6; text-align:center; vertical-align:middle; }
+.acct-table tbody td:first-child { text-align:left; }
+.acct-table tbody tr:last-child td { border-bottom:none; }
+.acct-table tbody tr.r-on td { background:#f0fdf6; } .acct-table tbody tr.r-risk td { background:#fffbeb; } .acct-table tbody tr.r-behind td { background:#fff5f5; }
+.cc-name { font-weight:700; font-size:13px; color:#0d2640; }
+.n-gray { color:#bbb; font-style:italic; } .n-num { font-weight:600; } .n-bold { font-weight:800; font-size:14px; }
+.minus { color:#b45309; font-weight:700; } .done-n { color:#166534; font-weight:700; }
+.td-left { padding:0 !important; } .left-inner { padding:10px 6px; } .left-num { font-size:22px; font-weight:900; color:#0d6e6e; line-height:1; } .left-unit { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.6px; color:#999; margin-top:2px; }
+.tgt-inner { display:flex; flex-direction:column; align-items:center; padding:8px 6px; }
+.tgt-num { font-size:20px; font-weight:900; } .tgt-unit { font-size:9px; font-weight:700; text-transform:uppercase; color:#999; margin-top:2px; }
+.tgt-green .tgt-num{color:#166534;} .tgt-amber .tgt-num{color:#92400e;} .tgt-red .tgt-num{color:#991b1b;}
+
+/* STATUS / PROGRESS BAR */
+.status-cell { min-width:190px; }
+.prog-wrap { text-align:left; }
+.prog-top { display:flex; justify-content:space-between; font-size:10.5px; font-weight:700; margin-bottom:4px; }
+.prog-bar { height:14px; border-radius:8px; background:#eceff3; overflow:hidden; position:relative; border:1px solid #e2e8f0; }
+.prog-fill { height:100%; border-radius:8px 0 0 8px; }
+.pf-green { background:linear-gradient(90deg,#22c55e,#16a34a); } .pf-amber { background:linear-gradient(90deg,#fbbf24,#f59e0b); } .pf-red { background:linear-gradient(90deg,#f87171,#dc2626); }
+.status-lbl { display:inline-block; margin-top:5px; padding:2px 9px; border-radius:20px; font-size:10.5px; font-weight:800; }
+.sl-on { background:#dcfce7; color:#166534; } .sl-risk { background:#fef3c7; color:#92400e; } .sl-behind { background:#fee2e2; color:#991b1b; } .sl-done { background:#dbeafe; color:#1e40af; }
+
+/* HTR */
+.htr-filters { display:flex; gap:7px; align-items:center; margin-bottom:16px; flex-wrap:wrap; }
+.htr-fl { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.6px; color:#9ca3af; }
+.fbt { padding:5px 13px; border-radius:20px; border:1px solid #d1d5db; font-size:11px; font-weight:600; cursor:pointer; background:#fff; color:#555; }
+.fbt.active { background:#0d2640; color:#fff; border-color:#0d2640; }
+.htr-sup { margin-bottom:22px; } .htr-sup-head { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+.sup-tag { color:#fff; padding:4px 13px; border-radius:5px; font-size:10px; font-weight:800; letter-spacing:.5px; text-transform:uppercase; }
+.htr-cnt { font-size:11px; color:#888; }
+.htr-tbl { width:100%; border-collapse:collapse; border:1px solid #e5e7eb; border-radius:8px; overflow:hidden; }
+.htr-tbl thead th { background:#f4f6fa; padding:8px 10px; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; color:#6b7280; text-align:left; border-bottom:2px solid #e4e8ef; white-space:nowrap; }
+.htr-tbl tbody td { padding:9px 10px; border-bottom:1px solid #f0f2f6; }
+.m-name { font-weight:700; color:#0d2640; } .m-cn { color:#9ca3af; font-size:11px; display:block; }
+.hold-tag { display:inline-block; background:#dc2626; color:#fff; font-size:8.5px; font-weight:800; padding:1px 5px; border-radius:3px; margin-left:4px; }
+.days-num { font-weight:800; } .dc{color:#991b1b;} .dh{color:#c2410c;} .dm{color:#92400e;} .dg{color:#166534;}
+.urg { display:inline-block; padding:3px 8px; border-radius:12px; font-size:10.5px; font-weight:700; white-space:nowrap; }
+.u-crit{background:#fee2e2;color:#991b1b;} .u-high{background:#ffedd5;color:#c2410c;} .u-med{background:#fef3c7;color:#92400e;} .u-rec{background:#dbeafe;color:#1e40af;}
+.sy{color:#16a34a;font-weight:800;} .sn{color:#dc2626;font-weight:800;} .no-data{color:#bbb;font-style:italic;}
+#status{padding:30px 22px;font-size:13px;color:#6b7280;} #status.err{color:#991b1b;}
+.brand-wrap{display:flex;align-items:center;gap:13px;}.brand-logo{height:36px;width:auto;background:#fff;padding:5px 9px;border-radius:8px;}
+</style>
+</head>
+<body>
+
+<div class="dept-bar">
+  <div class="dept-bar-inner">
+    <span class="dept-brand">Second Chance CM</span>
+    <nav class="dept-links">
+      <a href="index.html">Care Coordinators</a>
+      <a href="intake.html">Intake</a>
+      <a href="alliant.html">Alliant</a>
+      <a href="medicaid.html">Medicaid</a>
+      <a class="active">CA</a>
+    </nav>
+  </div>
+</div>
+<div class="header">
+  <div class="brand-wrap"><img class="brand-logo" src="logo.png" alt="Second Chance Case Management"><div>
+    <h1>Second Chance CM · Communications Accountability</h1>
+    <p>CA Department · Monthly Member Calls &amp; Hard-to-Reach Management</p>
+  </div></div>
+  <div class="header-right">
+    <span class="pill pill-date" id="datePill"></span>
+    <span class="pill pill-month" id="monthPill"></span>
+  </div>
+</div>
+
+<div class="formula-box">
+  📞 <strong>Left to Call</strong> = ( Monthly Total − Completed Calls − Pending Docs ) &nbsp;&nbsp;
+  <span class="formula-eq">Weekly Target = Left to Call ÷ weeks remaining</span>&nbsp;&nbsp;
+  <span style="color:#475569">Completed calls &amp; pending docs both count as handled.</span>
+</div>
+
+<div class="cards" id="cards"></div>
+
+<div class="tabs">
+  <div class="tab-btn active" onclick="switchTab('perf',this)">📊 Monthly Accountability</div>
+  <div class="tab-btn" onclick="switchTab('htr',this)">🚨 Hard to Reach</div>
+</div>
+
+<div class="content-wrap">
+  <div class="tab-pane active" id="perf">
+    <div class="last-updated">Live from sheet · loaded <span id="lastUpdated"></span> · <span id="weekLabel"></span></div>
+    <div id="status">Loading live CA data from the Department Stats sheet…</div>
+    <div id="perfContent"></div>
+  </div>
+  <div class="tab-pane" id="htr">
+    <div class="htr-filters">
+      <span class="htr-fl">Filter:</span>
+      <button class="fbt active" onclick="filterHtr('all',this)">All</button>
+      <button class="fbt" onclick="filterHtr('critical',this)">🔴 Critical (60+ days)</button>
+      <button class="fbt" onclick="filterHtr('no30',this)">📬 30-Day Not Sent</button>
+      <button class="fbt" onclick="filterHtr('hold',this)">🚫 On Hold</button>
+    </div>
+    <div id="htrContent"></div>
+  </div>
+</div>
+
+<script>
+const SHEET_ID='1HXYz9v9gU2HZ5wjaC5YKPxt1p9ReAPd3CyeuVvCA4hk';
+const TAB_DEPT="CA Department '26";
+const TAB_HTR="CA - Hard to Reach";
+const BLOCK_COLOR={Jose:'#1e6fa8', Adijat:'#6d28d9'};
+
+const NOW=new Date();
+const DATA_DATE=NOW.getFullYear()+'-'+String(NOW.getMonth()+1).padStart(2,'0')+'-'+String(NOW.getDate()).padStart(2,'0');
+const MONTH_WEEKS=4;
+const WEEK_N=Math.min(5,Math.max(1,Math.ceil(NOW.getDate()/7)));
+const WEEKS_LEFT=Math.max(0.5, MONTH_WEEKS - WEEK_N + 0.5);
+const DATA_MONTH=NOW.toLocaleDateString('en-US',{month:'long',year:'numeric'});
+const TODAY=new Date(DATA_DATE);
+
+let CA=[], HTR=[];
+let _cb=0;
+function loadTab(tab){return new Promise(function(res,rej){
+  const cb='__gv'+(_cb++);const s=document.createElement('script');
+  const tm=setTimeout(function(){cl();rej(new Error('timed out reaching the sheet'));},20000);
+  function cl(){clearTimeout(tm);delete window[cb];if(s.parentNode)s.parentNode.removeChild(s);}
+  window[cb]=function(r){cl();try{if(!r||!r.table)throw new Error('bad response');res(tableToRows(r.table));}catch(e){rej(e);}};
+  s.onerror=function(){cl();rej(new Error('could not reach the sheet'));};
+  s.src='https://docs.google.com/spreadsheets/d/'+SHEET_ID+'/gviz/tq?sheet='+encodeURIComponent(tab)+'&tqx=reqId:0;responseHandler:'+cb+';out:json&t='+Date.now();
+  document.head.appendChild(s);
+});}
+function cellStr(c){if(!c)return '';return (c.f!=null?c.f:(c.v==null?'':c.v));}
+function tableToRows(t){return [t.cols.map(c=>c.label||'')].concat(t.rows.map(r=>(r.c||[]).map(cellStr)));}
+const num=v=>{const n=parseFloat(String(v==null?'':v).replace(/[^0-9.\-]/g,''));return isNaN(n)?0:n;};
+function toIso(v){v=String(v==null?'':v).trim();const m=v.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);if(!m)return null;return m[3]+'-'+String(m[1]).padStart(2,'0')+'-'+String(m[2]).padStart(2,'0');}
+
+// CA Department: flat analyst list. cols: 0 name,1 overdue,2 starting,3 current,4-8 completed wk1-5,9 weekly avg,10 pending docs
+function parseCA(rows){
+  const skip={'Total':1,'On Track':1,'Hard to Reach Clients':1};
+  const out=[];
+  for(let i=1;i<rows.length;i++){
+    const name=String(rows[i][0]==null?'':rows[i][0]).trim();
+    if(!name||skip[name]) { if(name==='Total') break; continue; }
+    let completed=0; for(let k=4;k<=8;k++) completed+=num(rows[i][k]);
+    out.push({ name, overdue:num(rows[i][1]), starting:num(rows[i][2]), completed, pending:num(rows[i][10]), wavg:num(rows[i][9]) });
+  }
+  return out;
+}
+function calc(a){
+  const left=Math.max(0,a.starting - a.completed - a.pending);
+  const tgt=Math.ceil(left/WEEKS_LEFT);
+  const handled=a.starting? Math.min(100,Math.round((a.starting-left)/a.starting*100)) : 0;
+  let st;
+  if(a.starting===0) st='none';
+  else if(left===0) st='done';
+  else if(a.wavg>=tgt) st='on';
+  else if(a.wavg>=Math.ceil(tgt*0.6)) st='risk';
+  else st='behind';
+  return {left,tgt,handled,st};
+}
+
+// CA HTR: two side-by-side blocks (Jose cols 0-7, Adijat cols 9-16)
+function parseHTR(rows){
+  const blocks=[{lead:'Jose',c:0},{lead:'Adijat',c:9}];
+  const out=[];
+  for(let i=1;i<rows.length;i++){
+    blocks.forEach(b=>{
+      const member=String(rows[i][b.c]==null?'':rows[i][b.c]).trim();
+      if(!member) return;
+      out.push({
+        lead:b.lead, member,
+        cn:String(rows[i][b.c+1]==null?'':rows[i][b.c+1]).trim(),
+        reason:String(rows[i][b.c+2]==null?'':rows[i][b.c+2]).trim()||'Unknown',
+        lc:toIso(rows[i][b.c+3]), la:toIso(rows[i][b.c+4]),
+        hold:String(rows[i][b.c+5]==null?'':rows[i][b.c+5]).trim().toUpperCase()==='TRUE',
+        ca:String(rows[i][b.c+6]==null?'':rows[i][b.c+6]).trim(),
+        d30:String(rows[i][b.c+7]==null?'':rows[i][b.c+7]).trim().toUpperCase()==='TRUE'
+      });
+    });
+  }
+  return out;
+}
+
+function ds(d){if(!d)return null;return Math.round((TODAY-new Date(d))/864e5);}
+function fd(d){if(!d)return null;return new Date(d).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});}
+
+function renderHead(){
+  document.getElementById('datePill').textContent='As of '+TODAY.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+  document.getElementById('monthPill').textContent=DATA_MONTH.toUpperCase();
+  document.getElementById('lastUpdated').textContent=TODAY.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+  document.getElementById('weekLabel').textContent='Week '+WEEK_N+' of '+DATA_MONTH.split(' ')[0];
+}
+function renderCards(){
+  let ts=0,to=0,tp=0,behind=0,risk=0,on=0;
+  CA.forEach(a=>{ts+=a.starting;to+=a.overdue;tp+=a.pending;const {st}=calc(a);if(st==='behind')behind++;else if(st==='risk')risk++;else on++;});
+  document.getElementById('cards').innerHTML=
+    `<div class="card blue"><div class="cl">Total ${DATA_MONTH.split(' ')[0]} MCs</div><div class="cv">${ts.toLocaleString()}</div><div class="cs">Member calls assigned this month</div></div>`+
+    `<div class="card red"><div class="cl">Behind / At Risk</div><div class="cv">${behind+risk}</div><div class="cs">${behind} behind · ${risk} at risk · ${on} on track</div></div>`+
+    `<div class="card amber"><div class="cl">Overdue Services</div><div class="cv">${to}</div><div class="cs">Prior-period services still open</div></div>`+
+    `<div class="card purple"><div class="cl">Pending Documentation</div><div class="cv">${tp}</div><div class="cs">Calls done · paperwork outstanding</div></div>`;
+}
+function renderPerf(){
+  let html=`<table class="acct-table"><thead><tr>
+    <th style="text-align:left">Communications Analyst</th>
+    <th title="Total member calls assigned for the month">Monthly Total</th>
+    <th title="Calls completed so far">Completed</th>
+    <th title="Calls done, paperwork outstanding — counted as handled">Pending Docs</th>
+    <th class="th-left" title="Monthly Total minus completed minus pending docs">→ LEFT TO CALL</th>
+    <th class="th-target" title="Calls left ÷ weeks remaining — the weekly pace they must keep to finish the month">Avg Needed / Week</th>
+    <th>Overdue</th>
+    <th style="min-width:190px">Month Status</th>
+  </tr></thead><tbody>`;
+  CA.forEach(a=>{
+    const {left,tgt,handled,st}=calc(a);
+    const rc=st==='behind'?'r-behind':st==='risk'?'r-risk':'r-on';
+    const tc=st==='on'||st==='done'?'tgt-green':st==='risk'?'tgt-amber':'tgt-red';
+    const pf=st==='on'||st==='done'?'pf-green':st==='risk'?'pf-amber':'pf-red';
+    const sl=st==='done'?'sl-done':st==='on'?'sl-on':st==='risk'?'sl-risk':'sl-behind';
+    let slText;
+    if(st==='none') slText='No load';
+    else if(st==='done') slText='✅ All called';
+    else if(st==='on') slText='✅ On track';
+    else if(st==='risk') slText='⚠️ At risk';
+    else slText='🔴 Behind';
+    const comp=a.completed>0?`<span class="done-n">${a.completed}</span>`:`<span class="n-gray">—</span>`;
+    const pend=a.pending>0?`<span class="minus">−${a.pending}</span>`:`<span class="n-gray">—</span>`;
+    const ov=a.overdue>0?`<span style="color:#dc2626;font-weight:800">${a.overdue}</span>`:`<span class="n-gray">—</span>`;
+    html+=`<tr class="${rc}">
+      <td><span class="cc-name">${a.name}</span></td>
+      <td class="n-num">${a.starting||0}</td>
+      <td>${comp}</td>
+      <td>${pend}</td>
+      <td class="td-left"><div class="left-inner"><div class="left-num">${left}</div><div class="left-unit">left to call</div></div></td>
+      <td><div class="tgt-inner ${tc}"><div class="tgt-num">${tgt}</div><div class="tgt-unit">needed / wk</div></div></td>
+      <td>${ov}</td>
+      <td class="status-cell"><div class="prog-wrap">
+        <div class="prog-top"><span style="color:#475569">${handled}% handled</span><span style="color:#0d6e6e">${left} left</span></div>
+        <div class="prog-bar"><div class="prog-fill ${pf}" style="width:${handled}%"></div></div>
+        <span class="status-lbl ${sl}">${slText}</span>
+      </div></td>
+    </tr>`;
+  });
+  html+='</tbody></table>';
+  document.getElementById('perfContent').innerHTML=html;
+}
+
+function renderHtr(f){
+  const leads=['Jose','Adijat'];
+  let html='';
+  leads.forEach(lead=>{
+    let mbs=HTR.filter(m=>m.lead===lead);
+    if(f==='critical') mbs=mbs.filter(m=>{const d=ds(m.lc);return d===null||(d>60&&!m.d30);});
+    else if(f==='no30') mbs=mbs.filter(m=>!m.d30);
+    else if(f==='hold') mbs=mbs.filter(m=>m.hold);
+    if(!mbs.length) return;
+    const col=BLOCK_COLOR[lead]||'#555';
+    html+=`<div class="htr-sup"><div class="htr-sup-head"><span class="sup-tag" style="background:${col}">${lead}'s List</span><span class="htr-cnt">${mbs.length} member${mbs.length!==1?'s':''}</span></div>
+      <table class="htr-tbl"><thead><tr><th>Member</th><th>Reason</th><th>Last Contact</th><th>Days Since</th><th>Last Attempted</th><th>CA Assigned</th><th style="text-align:center">On Hold</th><th style="text-align:center">30-Day</th><th>Urgency</th></tr></thead><tbody>`;
+    mbs.forEach(m=>{
+      const d=ds(m.lc), ad=ds(m.la);
+      let uc,ul;
+      if(d===null){uc='u-crit';ul='⚠ No Record';}
+      else if(d>90&&!m.d30){uc='u-crit';ul=`${d}d · 30-Day Overdue`;}
+      else if(d>60&&!m.d30){uc='u-crit';ul=`${d}d · Action Needed`;}
+      else if(d>30&&!m.d30){uc='u-high';ul=`${d}d · 30-Day Needed`;}
+      else if(d>30&&m.d30){uc='u-med';ul=`${d}d · 30-Day Sent`;}
+      else if(d>14){uc='u-med';ul=`${d}d ago`;}
+      else{uc='u-rec';ul=`${d}d ago`;}
+      const dc=d===null?'dc':d>90?'dc':d>60?'dh':d>30?'dm':'dg';
+      const dDisp=d!==null?d+'d':'<span style="color:#dc2626">—</span>';
+      html+=`<tr>
+        <td><span class="m-name">${m.member}</span>${m.hold?'<span class="hold-tag">HOLD</span>':''}<span class="m-cn">${m.cn}</span></td>
+        <td>${m.reason}</td>
+        <td style="white-space:nowrap">${fd(m.lc)||'<span class="no-data">None</span>'}</td>
+        <td class="days-num ${dc}">${dDisp}</td>
+        <td style="font-size:12px;color:#555;white-space:nowrap">${m.la?`${fd(m.la)}<br><span style="font-size:10.5px;color:#9ca3af">(${ad}d ago)</span>`:'<span class="no-data">—</span>'}</td>
+        <td>${m.ca||'<span class="no-data">—</span>'}</td>
+        <td style="text-align:center">${m.hold?'<span style="color:#dc2626;font-weight:800">🚫 Yes</span>':'<span style="color:#ccc">—</span>'}</td>
+        <td style="text-align:center">${m.d30?'<span class="sy">✓</span>':'<span class="sn">✗</span>'}</td>
+        <td><span class="urg ${uc}">${ul}</span></td>
+      </tr>`;
+    });
+    html+='</tbody></table></div>';
+  });
+  document.getElementById('htrContent').innerHTML=html||'<p style="color:#999;padding:20px;text-align:center">No members match this filter.</p>';
+}
+function filterHtr(f,el){document.querySelectorAll('.fbt').forEach(b=>b.classList.remove('active'));el.classList.add('active');renderHtr(f);}
+function switchTab(id,el){document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));el.classList.add('active');document.getElementById(id).classList.add('active');}
+
+(async function(){
+  try{
+    const [deptRows,htrRows]=await Promise.all([loadTab(TAB_DEPT),loadTab(TAB_HTR)]);
+    CA=parseCA(deptRows); HTR=parseHTR(htrRows);
+    if(!CA.length) throw new Error('No analyst rows found.');
+    renderHead(); renderCards(); renderPerf(); renderHtr('all');
+    document.getElementById('status').style.display='none';
+  }catch(e){
+    const s=document.getElementById('status'); s.className='err';
+    s.innerHTML='Could not load live CA data: '+e.message+'. Reload to retry.';
+  }
+})();
+</script>
+</body>
+</html>

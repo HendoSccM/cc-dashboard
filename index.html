@@ -225,6 +225,7 @@ body {
 .dept-links a:hover { background:rgba(255,255,255,.12); color:#fff; }
 .dept-links a.active { background:#f5a623; color:#091d42; }
 .dept-links .soon { color:rgba(255,255,255,.4); font-size:11px; font-weight:600; padding:5px 10px; }
+.brand-wrap{display:flex;align-items:center;gap:13px;}.brand-logo{height:36px;width:auto;background:#fff;padding:5px 9px;border-radius:8px;}
 </style>
 </head>
 <body>
@@ -237,17 +238,16 @@ body {
       <a href="intake.html">Intake</a>
       <a href="alliant.html">Alliant</a>
       <a href="medicaid.html">Medicaid</a>
-      <span class="soon">CA · soon</span>
-      <span class="soon">CA Hard-to-Reach · soon</span>
+      <a href="ca.html">CA</a>
     </nav>
   </div>
 </div>
 
 <div class="header">
-  <div>
+  <div class="brand-wrap"><img class="brand-logo" src="logo.png" alt="Second Chance Case Management"><div>
     <h1>Second Chance CM &middot; Care Coordinator Accountability</h1>
     <p>CC Department &middot; Monthly CPR Tracking &amp; Hard-to-Reach Management</p>
-  </div>
+  </div></div>
   <div class="header-right">
     <span class="pill pill-date" id="datePill"></span>
     <span class="pill pill-month" id="monthPill"></span>
