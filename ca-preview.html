@@ -253,8 +253,7 @@ function renderPerf(){
     <th title="Calls completed so far">Completed</th>
     <th title="Calls done, paperwork outstanding — counted as handled">Pending Docs</th>
     <th class="th-left" title="Monthly Total minus completed minus pending docs">→ LEFT TO CALL</th>
-    <th class="th-target" title="Left to call ÷ weeks remaining">Weekly Target</th>
-    <th title="Their average calls per week so far">Weekly Avg</th>
+    <th class="th-target" title="Calls left ÷ weeks remaining — the weekly pace they must keep to finish the month">Avg Needed / Week</th>
     <th>Overdue</th>
     <th style="min-width:190px">Month Status</th>
   </tr></thead><tbody>`;
@@ -279,8 +278,7 @@ function renderPerf(){
       <td>${comp}</td>
       <td>${pend}</td>
       <td class="td-left"><div class="left-inner"><div class="left-num">${left}</div><div class="left-unit">left to call</div></div></td>
-      <td><div class="tgt-inner ${tc}"><div class="tgt-num">${tgt}</div><div class="tgt-unit">per week</div></div></td>
-      <td class="n-num">${a.wavg||0}</td>
+      <td><div class="tgt-inner ${tc}"><div class="tgt-num">${tgt}</div><div class="tgt-unit">needed / wk</div></div></td>
       <td>${ov}</td>
       <td class="status-cell"><div class="prog-wrap">
         <div class="prog-top"><span style="color:#475569">${handled}% handled</span><span style="color:#0d6e6e">${left} left</span></div>
