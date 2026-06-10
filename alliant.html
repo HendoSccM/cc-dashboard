@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Second Chance CM — Intake Department</title>
+<title>Second Chance CM — Alliant Numbers</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js" integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi" crossorigin="anonymous"></script>
 <style>
 :root{
@@ -17,8 +17,6 @@
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;}
-
-/* department switcher bar */
 .dept-bar{background:var(--navy-dk);}
 .dept-bar-inner{max-width:1440px;margin:0 auto;display:flex;align-items:center;gap:18px;padding:8px 28px;flex-wrap:wrap;}
 .dept-brand{font-weight:800;font-size:12px;letter-spacing:.3px;color:rgba(255,255,255,.9);}
@@ -27,7 +25,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,san
 .dept-links a:hover{background:rgba(255,255,255,.12);color:#fff;}
 .dept-links a.active{background:var(--gold);color:var(--navy-dk);}
 .dept-links .soon{color:rgba(255,255,255,.4);font-size:11px;font-weight:600;padding:5px 10px;}
-
 .app-header{background:linear-gradient(135deg,var(--navy-dk) 0%,var(--navy-lt) 100%);padding:0 28px;display:flex;align-items:center;justify-content:space-between;height:64px;box-shadow:0 2px 8px rgba(0,0,0,.25);}
 .logo-wrap{display:flex;align-items:center;gap:14px;}
 .logo-img{height:40px;width:auto;}
@@ -36,11 +33,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,san
 .header-title-block p{font-size:11px;color:rgba(255,255,255,.55);margin-top:1px;}
 .header-badge{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:6px;padding:5px 12px;font-size:11px;color:rgba(255,255,255,.8);font-weight:500;}
 .header-badge .dot{width:7px;height:7px;border-radius:50%;background:#4ade80;}
-
 .page{padding:24px 28px 40px;max-width:1440px;margin:0 auto;}
 .section-label{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);margin:24px 0 12px;display:flex;align-items:center;gap:8px;}
 .section-label::after{content:'';flex:1;height:1px;background:var(--border);}
-
 .kpi-row{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;}
 .kpi{background:var(--card);border-radius:10px;padding:18px 20px 16px;box-shadow:0 1px 4px rgba(0,0,0,.06);position:relative;overflow:hidden;border:1px solid var(--border);}
 .kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
@@ -52,14 +47,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,san
 .kpi-label{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);}
 .kpi-value{font-size:28px;font-weight:800;color:var(--text);margin:4px 0 3px;line-height:1;letter-spacing:-1px;}
 .kpi-sub{font-size:11px;color:var(--muted);}
-
 .card{background:var(--card);border-radius:10px;border:1px solid var(--border);box-shadow:0 1px 4px rgba(0,0,0,.06);padding:20px 22px;}
 .card-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.9px;color:var(--slate);margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;}
 .card-title span{font-size:11px;font-weight:500;text-transform:none;letter-spacing:0;color:var(--muted);}
 .chart-grid-1{margin-bottom:16px;}
 .chart-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
 .chart-wrap{position:relative;}
-
 .tbl-wrap{overflow-x:auto;}
 table{width:100%;border-collapse:collapse;font-size:13px;}
 thead tr{background:#f8fafc;}
@@ -69,10 +62,8 @@ tr:last-child td{border-bottom:none;}
 tbody tr:hover td{background:#fafbff;}
 td.num{font-variant-numeric:tabular-nums;font-weight:600;}
 td.primary{font-weight:600;color:var(--text);}
-.minibar{display:flex;align-items:center;gap:8px;min-width:90px;}
-.mbar-bg{flex:1;height:5px;border-radius:999px;background:#e9ecef;}
-.mbar-fill{height:5px;border-radius:999px;}
-.mbar-lbl{font-size:11px;color:var(--muted);min-width:28px;font-weight:600;}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:700;white-space:nowrap;}
+.bg{background:var(--green-lt);color:#166534;} .by{background:#fef9c3;color:#854d0e;} .bo{background:var(--amber-lt);color:#9a3412;} .br{background:var(--red-lt);color:#991b1b;} .bn{background:#e8edf6;color:var(--navy);}
 .two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
 .note{font-size:11px;color:var(--muted);margin-top:6px;}
 #status{padding:40px 28px;font-size:14px;color:var(--slate);}
@@ -88,8 +79,8 @@ td.primary{font-weight:600;color:var(--text);}
     <span class="dept-brand">Second Chance CM</span>
     <nav class="dept-links">
       <a href="index.html">Care Coordinators</a>
-      <a class="active">Intake</a>
-      <a href="alliant.html">Alliant</a>
+      <a href="intake.html">Intake</a>
+      <a class="active">Alliant</a>
       <span class="soon">Medicaid · soon</span>
     </nav>
   </div>
@@ -102,7 +93,7 @@ td.primary{font-weight:600;color:var(--text);}
     <div class="header-divider"></div>
     <div class="header-title-block">
       <h1>Operations Dashboard</h1>
-      <p>Intake Department · 2026 · live from sheet</p>
+      <p>Alliant Numbers · 2026 · live from sheet</p>
     </div>
   </div>
   <div class="header-meta">
@@ -110,66 +101,45 @@ td.primary{font-weight:600;color:var(--text);}
   </div>
 </header>
 
-<div id="status">Loading live Intake data from the Department Stats sheet…</div>
+<div id="status">Loading live Alliant data from the Department Stats sheet…</div>
 <div class="page" id="page" style="display:none">
 
   <div class="section-label">Key Metrics — Year to Date</div>
   <div class="kpi-row" id="kpis"></div>
 
-  <div class="section-label">Referral Volume &amp; DONR Performance</div>
+  <div class="section-label">Monthly Volume</div>
   <div class="card chart-grid-1">
-    <div class="card-title">Monthly Referrals &amp; DONR Completion % <span>2026</span></div>
-    <div class="chart-wrap"><canvas id="referralChart" height="200"></canvas></div>
+    <div class="card-title">Monthly IAs, RAs &amp; Total Back <span>2026</span></div>
+    <div class="chart-wrap"><canvas id="volChart" height="200"></canvas></div>
   </div>
 
-  <div class="section-label">Monthly Disposition</div>
-  <div class="card chart-grid-1">
-    <div class="card-title">Now/Comp · Active PAs · Not Interested · No Contact <span>by month</span></div>
-    <div class="chart-wrap"><canvas id="dispoChart" height="190"></canvas></div>
+  <div class="section-label">Tech Denials &amp; Nurse Performance</div>
+  <div class="chart-grid-2">
+    <div class="card">
+      <div class="card-title">Tech Denials — Trend <span>Total vs Submitted</span></div>
+      <div class="chart-wrap"><canvas id="techChart" height="210"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Nurse Overdue vs On-Time RAs</div>
+      <div class="chart-wrap"><canvas id="nurseChart" height="210"></canvas></div>
+    </div>
   </div>
 
-  <div class="section-label">Tech Denials</div>
+  <div class="section-label">County Status &amp; Nurse Assessment Stats</div>
   <div class="two-col">
     <div class="card">
-      <div class="card-title">Tech Denials by Month <span>Total vs Submitted</span></div>
-      <div class="chart-wrap"><canvas id="techChart" height="220"></canvas></div>
-      <div class="note">"Approved" isn't tracked separately in the sheet, so the chart shows Total and Submitted.</div>
-    </div>
-    <div class="card">
-      <div class="card-title">Open Tech Denials <span id="techOpenCount" style="color:var(--red);font-weight:700;"></span></div>
-      <div class="tbl-wrap" style="max-height:340px;overflow-y:auto;">
-        <table><thead><tr><th>Member</th><th>CN#</th><th>Date</th><th>Notes / Staff</th></tr></thead>
-        <tbody id="techTbody"></tbody></table>
+      <div class="card-title">Due Back by County</div>
+      <div class="tbl-wrap" style="max-height:460px;overflow-y:auto;">
+        <table><thead><tr><th>County</th><th>Pending</th><th>Total</th><th>Projected</th><th>Status</th></tr></thead>
+        <tbody id="countyTbody"></tbody></table>
       </div>
     </div>
-  </div>
-
-  <div class="section-label">Agency Referral Breakdown</div>
-  <div class="card">
-    <div class="card-title">Referrals by Agency <span>Year to Date '26</span></div>
-    <div class="tbl-wrap">
-      <table>
-        <thead><tr>
-          <th style="min-width:180px;">Agency</th><th>Total</th><th>Q1</th>
-          <th>Jan</th><th>Feb</th><th>Mar</th><th>Apr</th><th>May</th><th>Jun</th>
-          <th style="min-width:110px;">Share</th>
-        </tr></thead>
-        <tbody id="agencyTbody"></tbody>
-      </table>
-    </div>
-  </div>
-
-  <div class="section-label">Top Provider Performance</div>
-  <div class="card">
-    <div class="card-title">Provider Performance <span>live</span></div>
-    <div class="tbl-wrap">
-      <table>
-        <thead><tr>
-          <th>Provider</th><th>Now/Comp</th><th>Active PAs</th><th>Not Int.</th>
-          <th>No Contact</th><th>Metriport %</th><th>Faulty %</th>
-        </tr></thead>
-        <tbody id="provTbody"></tbody>
-      </table>
+    <div class="card">
+      <div class="card-title">Nurse Assessment Stats <span id="nurseCount"></span></div>
+      <div class="tbl-wrap" style="max-height:460px;overflow-y:auto;">
+        <table><thead><tr><th>Nurse</th><th>Overdue</th><th>Total</th><th>Overdue %</th><th>Status</th></tr></thead>
+        <tbody id="nurseTbody"></tbody></table>
+      </div>
     </div>
   </div>
 
@@ -177,10 +147,9 @@ td.primary{font-weight:600;color:var(--text);}
 
 <script>
 const SHEET_ID='1HXYz9v9gU2HZ5wjaC5YKPxt1p9ReAPd3CyeuVvCA4hk';
-const TAB="Intake Department '26";
-const TAB_ALLIANT="Alliant Numbers '26";  // holds the Tech Denials section
-const MNAMES=['January','Febuary','March','April','May','June'];
-const MSHORT=['Jan','Feb','Mar','Apr','May','Jun'];
+const TAB="Alliant Numbers '26";
+const MSHORT=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const MONTHNAMES=['January','Febuary','February','March','April','May','June','July','August','September','October','November','December'];
 const C={navy:'#0e2a5c',gold:'#f5a623',sky:'#5bb4d8',green:'#1a9e6e',red:'#d93025',amber:'#e8870d',purple:'#6b44c9',slate:'#94a3b8'};
 
 let _cb=0;
@@ -197,59 +166,39 @@ function cellStr(c){if(!c)return '';return (c.f!=null?c.f:(c.v==null?'':c.v));}
 function tableToRows(t){return [t.cols.map(c=>c.label||'')].concat(t.rows.map(r=>(r.c||[]).map(cellStr)));}
 const num=v=>{const n=parseFloat(String(v==null?'':v).replace(/[^0-9.\-]/g,''));return isNaN(n)?0:n;};
 
-function parseIntake(rows){
-  let firstMonth=-1,paMonth=-1,prov=-1;
-  rows.forEach((r,i)=>{
-    const a=String(r[0]||'').trim(), d=String(r[3]||'').trim();
-    if(a==='Month'&&d==="DONR's completed"&&firstMonth<0)firstMonth=i;
-    else if(a==='Month'&&d==='Active PAs'&&paMonth<0)paMonth=i;
-    if(a==='Top Providers Performance')prov=i;
-  });
-  const agencies=[];
-  for(let i=1;i<firstMonth;i++){const r=rows[i];const name=String(r[0]||'').trim();if(!name)continue;
-    agencies.push({name,total:num(r[1]),q1:num(r[2]),jan:num(r[6]),feb:num(r[7]),mar:num(r[8]),apr:num(r[9]),may:num(r[10]),jun:num(r[11])});}
-  const monthly=[]; let totals={ref:0,donr:0,pct:0};
-  for(let i=firstMonth+1;i<paMonth;i++){const r=rows[i];const m=String(r[0]||'').trim();
-    if(m==='Total'){totals={ref:num(r[1]),donr:num(r[2]),pct:num(r[6])};continue;}
-    if(MNAMES.includes(m))monthly.push({ref:num(r[1]),donr:num(r[2]),pct:num(r[6])});}
-  const pa=[];
-  for(let i=paMonth+1;i<prov;i++){const r=rows[i];const m=String(r[0]||'').trim();
-    if(MNAMES.includes(m))pa.push({nowComp:num(r[1]),activePA:num(r[2]),notInt:num(r[6]),noContact:num(r[7])});}
-  const providers=[]; let metTot={entries:0,succ:0,pct:0};
-  for(let i=prov+1;i<rows.length;i++){const r=rows[i];const name=String(r[0]||'').trim();
-    if(!name){metTot={entries:num(r[8]),succ:num(r[9]),pct:num(r[10])};break;}
-    providers.push({name,nowComp:num(r[1]),activePA:num(r[2]),notInt:num(r[6]),noContact:num(r[7]),metPct:num(r[10]),faulty:num(r[11])});}
-  return {agencies,monthly,pa,totals,providers,metTot};
-}
-
-// Tech denials live in the Alliant tab: a "Current Tech Denials" list + a "Tech Denials by Month" block.
-function parseTech(rows){
-  let openStart=-1,monthStart=-1,countyStart=-1;
-  rows.forEach((r,i)=>{
-    const a=String(r[0]||'').trim();
-    if(a==='Current Tech Denials')openStart=i;
-    else if(a==='Tech Denials by Month')monthStart=i;
+function parseAlliant(rows){
+  let techStart=-1,monthTech=-1,countyStart=-1,nurseStart=-1;
+  rows.forEach((r,i)=>{const a=String(r[0]||'').trim();
+    if(a==='Current Tech Denials')techStart=i;
+    else if(a==='Tech Denials by Month')monthTech=i;
     else if(a==='Due Back by County')countyStart=i;
-  });
-  const open=[];
-  if(openStart>=0){
-    const stop=monthStart>=0?monthStart:rows.length;
-    for(let i=openStart+1;i<stop;i++){
-      const cell=String(rows[i][0]||'').trim(); if(!cell) continue;
-      const m=cell.match(/^(.*?)(\d{3,7})\s*$/);
-      open.push({ name:(m?m[1]:cell).replace(/[,\s]+$/,'').trim(), cn:m?m[2]:'', date:String(rows[i][5]||'').trim(), notes:String(rows[i][6]||'').trim() });
-    }
+    else if(a==='Nurse')nurseStart=i;});
+  // monthly volume: rows 1.. until techStart (or first non-month)
+  const monthly=[];
+  for(let i=1;i<(techStart>=0?techStart:rows.length);i++){
+    const m=String(rows[i][0]||'').trim();
+    if(MONTHNAMES.includes(m)) monthly.push({ia:num(rows[i][1]),ra:num(rows[i][2]),back:num(rows[i][3])});
+    if(monthly.length>=12) break;
   }
-  const FIRST=['Jan','Feb','Mar','Apr','April','May','Jun'];
-  const months=[];
-  if(monthStart>=0){
-    const stop=countyStart>=0?countyStart:rows.length;
-    for(let i=monthStart+1;i<stop;i++){
-      const mm=String(rows[i][0]||'').trim();
-      if(FIRST.includes(mm)) months.push({total:num(rows[i][1]),sub:num(rows[i][2])});
-    }
-  }
-  return {open, months:months.slice(0,6)};
+  // tech monthly (Total col1, Submitted col2)
+  const tech=[];
+  if(monthTech>=0){ for(let i=monthTech+1;i<(countyStart>=0?countyStart:rows.length);i++){
+    const m=String(rows[i][0]||'').trim();
+    if(['Jan','Feb','Mar','Apr','April','May','Jun'].includes(m)) tech.push({total:num(rows[i][1]),sub:num(rows[i][2])});
+  }}
+  // counties: countyStart+1 .. nurseStart-1, keep rows with a name AND numeric total
+  const counties=[];
+  if(countyStart>=0){ const stop=nurseStart>=0?nurseStart:rows.length;
+    for(let i=countyStart+1;i<stop;i++){const r=rows[i];const name=String(r[0]||'').trim();const total=num(r[2]);
+      if(!name||total<=0) continue;
+      counties.push({name,pending:num(r[1]),total,proj:num(r[3]),status:String(r[4]||'').trim()});}}
+  // nurses: nurseStart+1 .. end, rows with a name; the totals row has empty name
+  const nurses=[]; let nurseTot={overdue:0,total:0};
+  if(nurseStart>=0){ for(let i=nurseStart+1;i<rows.length;i++){const r=rows[i];const name=String(r[0]||'').trim();
+    if(!name){ if(num(r[1])||num(r[2])) nurseTot={overdue:num(r[1]),total:num(r[2])}; continue; }
+    nurses.push({name,overdue:num(r[1]),total:num(r[2])});}}
+  if(!nurseTot.total){ nurseTot={overdue:nurses.reduce((s,n)=>s+n.overdue,0), total:nurses.reduce((s,n)=>s+n.total,0)}; }
+  return {monthly,tech,counties,nurses,nurseTot};
 }
 
 function kpiCard(cls,icon,label,val,sub){
@@ -257,89 +206,81 @@ function kpiCard(cls,icon,label,val,sub){
 }
 
 function render(d){
-  const sumPA=d.pa.reduce((s,x)=>s+x.activePA,0);
-  const sumNC=d.pa.reduce((s,x)=>s+x.nowComp,0);
-  document.getElementById('kpis').innerHTML=
-    kpiCard('navy','📥','YTD Referrals',d.totals.ref.toLocaleString(),'Jan – Jun 2026')+
-    kpiCard('green','✅','DONRs Completed',d.totals.donr.toLocaleString(),d.totals.pct.toFixed(2)+'% completion rate')+
-    kpiCard('gold','🔄','Now / Comp',sumNC.toLocaleString(),'Jan – Jun 2026')+
-    kpiCard('sky','📄','Active PAs',sumPA.toLocaleString(),'Jan – Jun 2026')+
-    kpiCard('purple','🔬','Metriport Success',Math.round(d.metTot.pct)+'%',d.metTot.succ+' / '+d.metTot.entries+' entries')+
-    kpiCard('red','⚠️','Open Tech Denials',(d.tech?d.tech.open.length:0),'pending resolution');
+  const cm=new Date().getMonth(); // 0-11
+  const upto=d.monthly.slice(0,cm+1);
+  const ytdIA=upto.reduce((s,m)=>s+m.ia,0);
+  const ytdRA=upto.reduce((s,m)=>s+m.ra,0);
+  const ytdBack=upto.reduce((s,m)=>s+m.back,0);
+  const atRisk=d.counties.filter(c=>/WARNING/i.test(c.status)).length;
+  const followUp=d.nurses.filter(n=>n.overdue>0).length;
 
-  // referral chart
-  new Chart(document.getElementById('referralChart'),{
-    data:{labels:MSHORT,datasets:[
-      {type:'bar',label:'Referrals',data:d.monthly.map(m=>m.ref),backgroundColor:C.navy,borderRadius:5,yAxisID:'y',order:2},
-      {type:'bar',label:'DONRs',data:d.monthly.map(m=>m.donr),backgroundColor:C.sky,borderRadius:5,yAxisID:'y',order:2},
-      {type:'line',label:'DONR %',data:d.monthly.map(m=>m.pct),borderColor:C.gold,backgroundColor:C.gold,tension:.3,yAxisID:'y1',order:1,pointRadius:4}
-    ]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}},
-      scales:{y:{beginAtZero:true,grid:{color:'#f1f5f9'}},y1:{position:'right',beginAtZero:true,max:100,grid:{drawOnChartArea:false},ticks:{callback:v=>v+'%'}}}}
-  });
-  // disposition chart
-  new Chart(document.getElementById('dispoChart'),{
-    type:'bar',
-    data:{labels:MSHORT,datasets:[
-      {label:'Now/Comp',data:d.pa.map(m=>m.nowComp),backgroundColor:C.green,borderRadius:4},
-      {label:'Active PAs',data:d.pa.map(m=>m.activePA),backgroundColor:C.sky,borderRadius:4},
-      {label:'Not Interested',data:d.pa.map(m=>m.notInt),backgroundColor:C.amber,borderRadius:4},
-      {label:'No Contact',data:d.pa.map(m=>m.noContact),backgroundColor:C.red,borderRadius:4}
+  document.getElementById('kpis').innerHTML=
+    kpiCard('navy','📈','YTD Total Back',ytdBack.toLocaleString(),'IAs + RAs returned')+
+    kpiCard('sky','📋','YTD IAs',ytdIA.toLocaleString(),'Jan – current month')+
+    kpiCard('purple','📝','YTD RAs',ytdRA.toLocaleString(),'Jan – current month')+
+    kpiCard('red','🚨','Overdue RAs',d.nurseTot.overdue.toLocaleString(),'of '+d.nurseTot.total.toLocaleString()+' assigned')+
+    kpiCard('gold','👩‍⚕️','Follow-Up Nurses',followUp,'of '+d.nurses.length+' nurses')+
+    kpiCard('green','🗺️','Counties at Risk',atRisk,'1-MO or 2-MO warning');
+
+  const vlabels=MSHORT.slice(0,Math.max(upto.length,6));
+  const vdata=d.monthly.slice(0,vlabels.length);
+  new Chart(document.getElementById('volChart'),{
+    data:{labels:vlabels,datasets:[
+      {type:'bar',label:'IAs',data:vdata.map(m=>m.ia),backgroundColor:C.sky,borderRadius:5,order:2},
+      {type:'bar',label:'RAs',data:vdata.map(m=>m.ra),backgroundColor:C.purple,borderRadius:5,order:2},
+      {type:'line',label:'Total Back',data:vdata.map(m=>m.back),borderColor:C.gold,backgroundColor:C.gold,tension:.3,pointRadius:4,order:1}
     ]},
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}},scales:{y:{beginAtZero:true,grid:{color:'#f1f5f9'}}}}
   });
 
-  // tech denials chart + open list
-  if(d.tech){
-    new Chart(document.getElementById('techChart'),{type:'bar',
-      data:{labels:MSHORT,datasets:[
-        {label:'Total',data:d.tech.months.map(m=>m.total),backgroundColor:C.navy,borderRadius:4},
-        {label:'Submitted',data:d.tech.months.map(m=>m.sub),backgroundColor:C.sky,borderRadius:4}
-      ]},
-      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}},scales:{y:{beginAtZero:true,grid:{color:'#f1f5f9'}}}}
-    });
-    document.getElementById('techOpenCount').textContent=d.tech.open.length+' pending';
-    document.getElementById('techTbody').innerHTML=d.tech.open.map(o=>
-      `<tr><td class="primary" style="font-size:12px">${o.name}</td><td class="num">${o.cn||'—'}</td><td>${o.date||'—'}</td><td style="font-size:12px;color:var(--text-sm)">${o.notes||'—'}</td></tr>`
-    ).join('')||'<tr><td colspan="4" style="color:var(--muted)">No open tech denials.</td></tr>';
-  }
+  new Chart(document.getElementById('techChart'),{type:'line',
+    data:{labels:MSHORT.slice(0,d.tech.length),datasets:[
+      {label:'Total',data:d.tech.map(m=>m.total),borderColor:C.navy,backgroundColor:C.navy,tension:.3,pointRadius:4},
+      {label:'Submitted',data:d.tech.map(m=>m.sub),borderColor:C.sky,backgroundColor:C.sky,tension:.3,pointRadius:4}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}},scales:{y:{beginAtZero:true,grid:{color:'#f1f5f9'}}}}
+  });
 
-  // agency table (sorted desc by total)
-  const grand=d.totals.ref||d.agencies.reduce((s,a)=>s+a.total,0);
-  const ag=d.agencies.slice().sort((a,b)=>b.total-a.total);
-  document.getElementById('agencyTbody').innerHTML=ag.map(a=>{
-    const pct=grand?Math.round(a.total/grand*100):0;
-    const share=Math.min(pct*3,100);
-    const color=pct>=20?C.navy:pct>=8?C.sky:C.slate;
-    const cell=v=>v>0?v:'—';
-    return `<tr><td class="primary">${a.name}</td><td class="num">${a.total||'—'}</td><td class="num">${a.q1||'—'}</td>
-      <td>${cell(a.jan)}</td><td>${cell(a.feb)}</td><td>${cell(a.mar)}</td><td>${cell(a.apr)}</td><td>${cell(a.may)}</td><td>${cell(a.jun)}</td>
-      <td><div class="minibar"><div class="mbar-bg"><div class="mbar-fill" style="width:${share}%;background:${color};"></div></div><span class="mbar-lbl">${pct}%</span></div></td></tr>`;
+  const ns=d.nurses.slice().sort((a,b)=>b.overdue-a.overdue);
+  new Chart(document.getElementById('nurseChart'),{type:'bar',
+    data:{labels:ns.map(n=>n.name),datasets:[
+      {label:'Overdue',data:ns.map(n=>n.overdue),backgroundColor:C.red,borderRadius:3,stack:'s'},
+      {label:'On-Time',data:ns.map(n=>Math.max(0,n.total-n.overdue)),backgroundColor:C.green,borderRadius:3,stack:'s'}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}},scales:{x:{stacked:true,grid:{display:false}},y:{stacked:true,beginAtZero:true,grid:{color:'#f1f5f9'}}}}
+  });
+
+  document.getElementById('countyTbody').innerHTML=d.counties.map(c=>{
+    let cls='bn',lbl=c.status||'—';
+    if(/G2G/i.test(c.status)){cls='bg';lbl='🟢 G2G';}
+    else if(/1-MO/i.test(c.status)){cls='bo';lbl='🟠 1-MO';}
+    else if(/2-MO/i.test(c.status)){cls='by';lbl='🟡 2-MO';}
+    return `<tr><td class="primary">${c.name}</td><td class="num">${c.pending}</td><td class="num">${c.total}</td><td class="num">${c.proj}</td><td><span class="badge ${cls}">${lbl}</span></td></tr>`;
   }).join('');
 
-  // provider table
-  document.getElementById('provTbody').innerHTML=d.providers.map(p=>{
-    const fc=p.faulty>=40?C.red:p.faulty>=20?C.amber:C.green;
-    return `<tr><td class="primary">${p.name}</td><td class="num">${p.nowComp}</td><td class="num">${p.activePA}</td>
-      <td class="num">${p.notInt}</td><td class="num">${p.noContact}</td>
-      <td><span style="font-weight:700;color:${C.sky}">${p.metPct?p.metPct+'%':'—'}</span></td>
-      <td><span style="font-weight:700;color:${fc}">${p.faulty?p.faulty.toFixed(2)+'%':'—'}</span></td></tr>`;
+  document.getElementById('nurseCount').textContent=followUp+' flagged';
+  document.getElementById('nurseTbody').innerHTML=ns.map(n=>{
+    const pct=n.total?Math.round(n.overdue/n.total*100):0;
+    const flagged=n.overdue>0;
+    const pc=pct>=30?C.red:pct>=15?C.amber:C.green;
+    return `<tr><td class="primary">${n.name}</td><td class="num">${n.overdue}</td><td class="num">${n.total}</td>
+      <td><span style="font-weight:700;color:${pc}">${pct}%</span></td>
+      <td><span class="badge ${flagged?'bo':'bg'}">${flagged?'Follow-Up':'On Track'}</span></td></tr>`;
   }).join('');
 }
 
 (async function(){
   try{
-    const [rows, aRows]=await Promise.all([ loadTab(TAB), loadTab(TAB_ALLIANT) ]);
-    const d=parseIntake(rows);
-    d.tech=parseTech(aRows);
-    if(!d.monthly.length) throw new Error('Could not read the Intake tab layout.');
+    const rows=await loadTab(TAB);
+    const d=parseAlliant(rows);
+    if(!d.monthly.length) throw new Error('Could not read the Alliant tab layout.');
     document.getElementById('asof').textContent='As of '+new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
     render(d);
     document.getElementById('status').style.display='none';
     document.getElementById('page').style.display='block';
   }catch(e){
     const s=document.getElementById('status');s.className='err';
-    s.innerHTML='Could not load live Intake data: '+e.message+'<br><br>If the sheet sharing or the Intake Department tab name changed, this page needs a quick update. Reload to retry.';
+    s.innerHTML='Could not load live Alliant data: '+e.message+'<br><br>If the sheet sharing or the Alliant Numbers tab name changed, this page needs a quick update. Reload to retry.';
   }
 })();
 </script>
