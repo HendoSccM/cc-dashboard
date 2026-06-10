@@ -199,6 +199,22 @@ body {
 #status { padding: 30px 22px; font-size: 13px; color: #6b7280; }
 #status.err { color: #991b1b; }
 .refresh-note { font-size: 10px; color: #9ca3af; padding: 0 22px 14px; }
+
+/* EMAIL LINK + MODAL */
+.email-link { display:inline-block; margin-left:8px; font-size:11px; font-weight:700; color:#1a4e7a; cursor:pointer; vertical-align:middle; white-space:nowrap; }
+.email-link:hover { text-decoration:underline; }
+.email-modal-bg { display:none; position:fixed; inset:0; background:rgba(13,38,64,.55); z-index:1000; align-items:center; justify-content:center; padding:20px; }
+.email-modal { background:#fff; border-radius:10px; width:100%; max-width:680px; max-height:88vh; display:flex; flex-direction:column; box-shadow:0 12px 40px rgba(0,0,0,.3); overflow:hidden; }
+.email-modal-head { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; padding:14px 18px; border-bottom:1px solid #e5e7eb; }
+.email-modal-head strong { font-size:14px; color:#0d2640; }
+.em-sub { font-size:11px; color:#6b7280; margin-top:3px; }
+.em-x { background:none; border:none; font-size:18px; color:#9ca3af; cursor:pointer; line-height:1; padding:2px 4px; }
+.em-x:hover { color:#374151; }
+#emBody { flex:1; margin:0; border:none; border-bottom:1px solid #e5e7eb; padding:16px 18px; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; font-size:12.5px; line-height:1.5; color:#1a2332; resize:none; outline:none; white-space:pre-wrap; }
+.email-modal-foot { display:flex; align-items:center; gap:12px; padding:12px 18px; }
+.em-copy { background:#1a4e7a; color:#fff; border:none; border-radius:6px; padding:9px 18px; font-size:12px; font-weight:700; cursor:pointer; }
+.em-copy:hover { background:#0d2640; }
+.em-copied { font-size:12px; font-weight:700; color:#166534; }
 </style>
 </head>
 <body>
@@ -445,7 +461,7 @@ function renderCards(){
 
 function renderPerf(){
   let html='';
-  CC_DATA.forEach(sg=>{
+  CC_DATA.forEach((sg,si)=>{
     const col=SUP_COLORS[sg.supervisor]||'#555';
     const ts=sg.team.reduce((s,c)=>s+(c.starting||0),0);
     const to=sg.team.reduce((s,c)=>s+(c.overdue||0),0);
@@ -476,7 +492,7 @@ function renderPerf(){
         <th>Overdue</th>
         <th style="min-width:200px;text-align:left">Supervisor Talking Point</th>
       </tr></thead><tbody>`;
-    sg.team.forEach(cc=>{
+    sg.team.forEach((cc,ci)=>{
       const {vr,tgt,gap,st}=calc(cc);
       const n=note(cc,vr,tgt,gap,st);
       const rc=st==='on'?'r-on-track':st==='risk'?'r-at-risk':'r-behind';
@@ -494,7 +510,7 @@ function renderPerf(){
       const ovBadge=(cc.overdue||0)>0?`<span class="cc-ov ${cc.overdue>=10?'hi':''}">${cc.overdue} overdue</span>`:'';
       const tpc=st==='behind'?'tp-red':st==='risk'?'tp-warn':'';
       html+=`<tr class="${rc}">
-        <td><span class="cc-name">${cc.name}</span>${ovBadge}</td>
+        <td><span class="cc-name">${cc.name}</span>${ovBadge} <a class="email-link" onclick="openEmail(${si},${ci})">✉ Email</a></td>
         <td class="n-num">${cc.starting||0}</td>
         <td>${done}</td>
         <td>${pend}</td>
@@ -570,6 +586,83 @@ function switchTab(id,el){
   el.classList.add('active'); document.getElementById(id).classList.add('active');
 }
 
+// ── EMAIL GENERATOR ────────────────────────────────────────
+function nextFriday(){
+  const d=new Date(TODAY); const add=(5 - d.getDay() + 7) % 7;
+  d.setDate(d.getDate()+add);
+  return d.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+}
+function buildEmail(cc){
+  const {vr,tgt}=calc(cc);
+  const first=String(cc.name).split(' ')[0];
+  const mon=DATA_MONTH.split(' ')[0];
+  const sch=cc.sch_wk1||0;
+  const onPace = vr===0 || sch>=tgt;
+  const status = onPace ? 'On Pace' : ('Behind by '+(tgt-sch));
+  const comments = onPace
+    ? `You're tracking well for ${mon}. The goal now is to maintain momentum and avoid creating a larger workload later in the month. Please review the information below and confirm your plan for the upcoming weeks.`
+    : `Your CPR numbers are currently behind pace for ${mon}. Based on your remaining workload, you must average ${tgt} CPRs per week to finish the month successfully. I need a clear action plan below outlining how you intend to get back on track.`;
+  const overdue = (cc.overdue||0)>0 ? `${cc.overdue} overdue service${cc.overdue===1?'':'s'} on record.` : 'No overdue services identified at this time.';
+  const mine = HTR.filter(m=>m.cc===cc.name);
+  let htr;
+  if(!mine.length){ htr='No Hard-to-Reach members at this time.'; }
+  else {
+    htr='Member\tCN#\tLast Successful Contact\tLast Attempt\tProvider Contacted?\tServices on Hold?\tNext Action\n'
+      + mine.map(m=>`${m.member}\t${m.cn}\t${fd(m.lc)||'—'}\t${fd(m.la)||'—'}\t\t${m.hold?'Yes':'No'}\t`).join('\n');
+  }
+  return `${first},
+
+STATUS UPDATE
+${mon} CPR Assigned: ${cc.starting||0}
+Pending Documentation: ${cc.pending||0}
+CPRs Remaining: ${vr}
+Weekly CPR Target: ${tgt} per week
+
+Week ${WEEK_N} Performance
+Scheduled: ${sch}
+Target: ${tgt}
+Status: ${status}
+
+SUPERVISOR COMMENTS
+${comments}
+
+OVERDUE SERVICES
+${overdue}
+
+ACTION PLAN REQUIRED
+Please reply by Friday, ${nextFriday()} with the following:
+
+1. CPRs You Will Complete This Week
+Member Name\tCN#
+
+2. CPRs Scheduled for Future Weeks
+Member Name\tCN#\tTarget Week
+
+HARD-TO-REACH MEMBERS
+Complete only for members currently meeting Hard-to-Reach criteria.
+${htr}
+
+Your weekly target is ${tgt} CPRs.
+I expect proactive scheduling, documented outreach efforts, and a clear plan for any member creating barriers to completion.
+Please let me know if there is anything I can do to help and assist.`;
+}
+function openEmail(si,ci){
+  const cc=CC_DATA[si].team[ci];
+  document.getElementById('emTitle').textContent='Email to '+cc.name;
+  document.getElementById('emSub').textContent='Suggested subject: '+DATA_MONTH.split(' ')[0]+' CPR Status Update — '+cc.name;
+  document.getElementById('emBody').value=buildEmail(cc);
+  document.getElementById('emCopied').textContent='';
+  document.getElementById('emailModal').style.display='flex';
+}
+function closeEmail(){ document.getElementById('emailModal').style.display='none'; }
+function copyEmail(){
+  const ta=document.getElementById('emBody');
+  const done=()=>{ document.getElementById('emCopied').textContent='✓ Copied — paste into a new email'; };
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(ta.value).then(done, ()=>{ ta.select(); document.execCommand('copy'); done(); });
+  } else { ta.select(); document.execCommand('copy'); done(); }
+}
+
 // ── BOOT: fetch sheet, parse, render ───────────────────────
 async function boot(){
   try{
@@ -590,5 +683,19 @@ async function boot(){
 }
 boot();
 </script>
+
+<div id="emailModal" class="email-modal-bg" onclick="if(event.target===this)closeEmail()">
+  <div class="email-modal">
+    <div class="email-modal-head">
+      <div><strong id="emTitle"></strong><div class="em-sub" id="emSub"></div></div>
+      <button class="em-x" onclick="closeEmail()">✕</button>
+    </div>
+    <textarea id="emBody" readonly></textarea>
+    <div class="email-modal-foot">
+      <button class="em-copy" onclick="copyEmail()">Copy email</button>
+      <span class="em-copied" id="emCopied"></span>
+    </div>
+  </div>
+</div>
 </body>
 </html>
