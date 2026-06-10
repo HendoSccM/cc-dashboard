@@ -290,8 +290,8 @@ function tableToRows(table){
   return [labels].concat(data);
 }
 
-// Supervisors in display order. Alexa is kept under Shuronda even though
-// the sheet lists her in Zukrat's block (matches the internal convention).
+// Supervisors in display order. Shuronda currently has no CCs (Alexa is on
+// Zukrat's team, where the sheet lists her), so no Shuronda block renders.
 const SUPS = ['Courtney','Jennifer','Zukrat','Jarrett','Shuronda'];
 const SUP_COLORS = {
   Courtney:'#1e6fa8', Jennifer:'#6d28d9',
@@ -361,9 +361,7 @@ function parseCC(rows){
       completed: completed,
       pending: num(r[18])
     };
-    let sup = cur;
-    if(name.indexOf('Alexa')!==-1) sup='Shuronda'; // quirk: Alexa under Shuronda
-    teams[sup].push(rec);
+    teams[cur].push(rec); // Alexa stays under Zukrat (her block in the sheet)
   });
   return SUPS.filter(s=>teams[s].length).map(s=>({supervisor:s, team:teams[s]}));
 }
