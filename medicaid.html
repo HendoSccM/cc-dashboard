@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Second Chance CM — Alliant Numbers</title>
+<title>Second Chance CM — Medicaid</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js" integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi" crossorigin="anonymous"></script>
 <style>
 :root{
@@ -50,7 +50,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,san
 .card{background:var(--card);border-radius:10px;border:1px solid var(--border);box-shadow:0 1px 4px rgba(0,0,0,.06);padding:20px 22px;}
 .card-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.9px;color:var(--slate);margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;}
 .card-title span{font-size:11px;font-weight:500;text-transform:none;letter-spacing:0;color:var(--muted);}
-.chart-grid-1{margin-bottom:16px;}
 .chart-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
 .chart-wrap{position:relative;}
 .tbl-wrap{overflow-x:auto;}
@@ -60,12 +59,11 @@ th{text-align:left;padding:9px 12px;font-size:10px;font-weight:800;text-transfor
 td{padding:9px 12px;border-bottom:1px solid #f1f5f9;color:var(--text-sm);vertical-align:middle;}
 tr:last-child td{border-bottom:none;}
 tbody tr:hover td{background:#fafbff;}
-td.num{font-variant-numeric:tabular-nums;font-weight:600;}
 td.primary{font-weight:600;color:var(--text);}
 .badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:700;white-space:nowrap;}
-.bg{background:var(--green-lt);color:#166534;} .by{background:#fef9c3;color:#854d0e;} .bo{background:var(--amber-lt);color:#9a3412;} .br{background:var(--red-lt);color:#991b1b;} .bn{background:#e8edf6;color:var(--navy);}
+.bg{background:var(--green-lt);color:#166534;} .by{background:#fef9c3;color:#854d0e;} .br{background:var(--red-lt);color:#991b1b;} .bb{background:var(--sky-lt);color:#0369a1;} .bn{background:#e8edf6;color:var(--navy);}
 .two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
-.note{font-size:11px;color:var(--muted);margin-top:6px;}
+.mbar-bg{height:5px;border-radius:999px;background:#e9ecef;} .mbar-fill{height:5px;border-radius:999px;}
 #status{padding:40px 28px;font-size:14px;color:var(--slate);}
 #status.err{color:#991b1b;}
 @media(max-width:900px){.kpi-row{grid-template-columns:repeat(3,1fr);}.chart-grid-2,.two-col{grid-template-columns:1fr;}}
@@ -80,8 +78,8 @@ td.primary{font-weight:600;color:var(--text);}
     <nav class="dept-links">
       <a href="index.html">Care Coordinators</a>
       <a href="intake.html">Intake</a>
-      <a class="active">Alliant</a>
-      <a href="medicaid.html">Medicaid</a>
+      <a href="alliant.html">Alliant</a>
+      <a class="active">Medicaid</a>
       <span class="soon">CA · soon</span>
       <span class="soon">CA Hard-to-Reach · soon</span>
     </nav>
@@ -95,7 +93,7 @@ td.primary{font-weight:600;color:var(--text);}
     <div class="header-divider"></div>
     <div class="header-title-block">
       <h1>Operations Dashboard</h1>
-      <p>Alliant Numbers · 2026 · live from sheet</p>
+      <p>Medicaid · 2026 · live from sheet</p>
     </div>
   </div>
   <div class="header-meta">
@@ -103,44 +101,42 @@ td.primary{font-weight:600;color:var(--text);}
   </div>
 </header>
 
-<div id="status">Loading live Alliant data from the Department Stats sheet…</div>
+<div id="status">Loading live Medicaid data from the Department Stats sheet…</div>
 <div class="page" id="page" style="display:none">
 
   <div class="section-label">Key Metrics — Year to Date</div>
   <div class="kpi-row" id="kpis"></div>
 
-  <div class="section-label">Monthly Volume</div>
-  <div class="card chart-grid-1">
-    <div class="card-title">Monthly IAs, RAs &amp; Total Back <span>2026</span></div>
-    <div class="chart-wrap"><canvas id="volChart" height="200"></canvas></div>
-  </div>
-
-  <div class="section-label">Tech Denials &amp; Nurse Performance</div>
+  <div class="section-label">Approvals Trend &amp; Pipeline</div>
   <div class="chart-grid-2">
     <div class="card">
-      <div class="card-title">Tech Denials — Trend <span>Total vs Submitted</span></div>
-      <div class="chart-wrap"><canvas id="techChart" height="210"></canvas></div>
+      <div class="card-title">Monthly Approvals <span>2026</span></div>
+      <div class="chart-wrap"><canvas id="apprChart" height="220"></canvas></div>
     </div>
     <div class="card">
-      <div class="card-title">Nurse Overdue vs On-Time RAs</div>
-      <div class="chart-wrap"><canvas id="nurseChart" height="210"></canvas></div>
+      <div class="card-title">CCSP Nonapproved Breakdown <span>Current Pipeline</span></div>
+      <div class="chart-wrap" style="display:flex;align-items:center;justify-content:center;"><canvas id="donut" height="220"></canvas></div>
     </div>
   </div>
 
-  <div class="section-label">County Status &amp; Nurse Assessment Stats</div>
+  <div class="section-label">Recent Approvals &amp; Discharges</div>
   <div class="two-col">
     <div class="card">
-      <div class="card-title">Due Back by County</div>
-      <div class="tbl-wrap" style="max-height:460px;overflow-y:auto;">
-        <table><thead><tr><th>County</th><th>Pending</th><th>Total</th><th>Projected</th><th>Status</th></tr></thead>
-        <tbody id="countyTbody"></tbody></table>
+      <div class="card-title">Recent Approvals <span id="apprCount" style="color:var(--green);font-weight:700;"></span></div>
+      <div class="tbl-wrap">
+        <table><thead><tr><th>Member</th><th>Approval Date</th><th>Brokered</th><th>Notes</th></tr></thead>
+        <tbody id="apprTbody"></tbody></table>
       </div>
     </div>
     <div class="card">
-      <div class="card-title">Nurse Assessment Stats <span id="nurseCount"></span></div>
-      <div class="tbl-wrap" style="max-height:460px;overflow-y:auto;">
-        <table><thead><tr><th>Nurse</th><th>Overdue</th><th>Total</th><th>Overdue %</th><th>Status</th></tr></thead>
-        <tbody id="nurseTbody"></tbody></table>
+      <div class="card-title">Discharged Members <span id="dischCount" style="color:var(--red);font-weight:700;"></span></div>
+      <div class="tbl-wrap" style="max-height:300px;overflow-y:auto;">
+        <table><thead><tr><th>Member</th><th>Reason</th></tr></thead>
+        <tbody id="dischTbody"></tbody></table>
+      </div>
+      <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);">
+        <div class="card-title" style="margin-bottom:10px;">Discharge Reason Breakdown</div>
+        <div id="reasonBreakdown" style="display:flex;flex-direction:column;gap:8px;"></div>
       </div>
     </div>
   </div>
@@ -149,9 +145,9 @@ td.primary{font-weight:600;color:var(--text);}
 
 <script>
 const SHEET_ID='1HXYz9v9gU2HZ5wjaC5YKPxt1p9ReAPd3CyeuVvCA4hk';
-const TAB="Alliant Numbers '26";
-const MSHORT=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-const MONTHNAMES=['January','Febuary','February','March','April','May','June','July','August','September','October','November','December'];
+const TAB="Medicaid '26";
+const MN=['January','February','Febuary','March','April','May','June','July','August','September','October','November','December'];
+const MSHORT={January:'Jan',February:'Feb',Febuary:'Feb',March:'Mar',April:'Apr',May:'May',June:'Jun',July:'Jul',August:'Aug',September:'Sep',October:'Oct',November:'Nov',December:'Dec'};
 const C={navy:'#0e2a5c',gold:'#f5a623',sky:'#5bb4d8',green:'#1a9e6e',red:'#d93025',amber:'#e8870d',purple:'#6b44c9',slate:'#94a3b8'};
 
 let _cb=0;
@@ -168,121 +164,88 @@ function cellStr(c){if(!c)return '';return (c.f!=null?c.f:(c.v==null?'':c.v));}
 function tableToRows(t){return [t.cols.map(c=>c.label||'')].concat(t.rows.map(r=>(r.c||[]).map(cellStr)));}
 const num=v=>{const n=parseFloat(String(v==null?'':v).replace(/[^0-9.\-]/g,''));return isNaN(n)?0:n;};
 
-function parseAlliant(rows){
-  let techStart=-1,monthTech=-1,countyStart=-1,nurseStart=-1;
-  rows.forEach((r,i)=>{const a=String(r[0]||'').trim();
-    if(a==='Current Tech Denials')techStart=i;
-    else if(a==='Tech Denials by Month')monthTech=i;
-    else if(a==='Due Back by County')countyStart=i;
-    else if(a==='Nurse')nurseStart=i;});
-  // monthly volume: rows 1.. until techStart (or first non-month)
-  const monthly=[];
-  for(let i=1;i<(techStart>=0?techStart:rows.length);i++){
-    const m=String(rows[i][0]||'').trim();
-    if(MONTHNAMES.includes(m)) monthly.push({ia:num(rows[i][1]),ra:num(rows[i][2]),back:num(rows[i][3])});
-    if(monthly.length>=12) break;
-  }
-  // tech monthly (Total col1, Submitted col2)
-  const tech=[];
-  if(monthTech>=0){ for(let i=monthTech+1;i<(countyStart>=0?countyStart:rows.length);i++){
-    const m=String(rows[i][0]||'').trim();
-    if(['Jan','Feb','Mar','Apr','April','May','Jun'].includes(m)) tech.push({total:num(rows[i][1]),sub:num(rows[i][2])});
-  }}
-  // counties: countyStart+1 .. nurseStart-1, keep rows with a name AND numeric total
-  const counties=[];
-  if(countyStart>=0){ const stop=nurseStart>=0?nurseStart:rows.length;
-    for(let i=countyStart+1;i<stop;i++){const r=rows[i];const name=String(r[0]||'').trim();const total=num(r[2]);
-      if(!name||total<=0) continue;
-      counties.push({name,pending:num(r[1]),total,proj:num(r[3]),status:String(r[4]||'').trim()});}}
-  // nurses: nurseStart+1 .. end, rows with a name; the totals row has empty name
-  const nurses=[]; let nurseTot={overdue:0,total:0};
-  if(nurseStart>=0){ for(let i=nurseStart+1;i<rows.length;i++){const r=rows[i];const name=String(r[0]||'').trim();
-    if(!name){ if(num(r[1])||num(r[2])) nurseTot={overdue:num(r[1]),total:num(r[2])}; continue; }
-    nurses.push({name,overdue:num(r[1]),total:num(r[2])});}}
-  if(!nurseTot.total){ nurseTot={overdue:nurses.reduce((s,n)=>s+n.overdue,0), total:nurses.reduce((s,n)=>s+n.total,0)}; }
-  return {monthly,tech,counties,nurses,nurseTot};
+function parseMedicaid(rows){
+  const nonapp={}; let nonappTotal=0, ytd=0; const monthly=[]; const approvals=[]; const discharged=[]; let mode='';
+  rows.forEach((r,i)=>{
+    const c0=String(r[0]||'').trim(), c4=String(r[4]||'').trim();
+    if(MN.includes(c4)) monthly.push({m:c4, n:num(r[5])});
+    else if(c4==='Total') ytd=num(r[5]);
+    if(['QMB','Nursing Home','None'].includes(c0)) nonapp[c0]=num(r[1]);
+    else if(c0==='Total' && mode==='' && String(r[1]||'')!=='') nonappTotal=num(r[1]);
+    if(c0==='Approvals'){mode='appr';return;}
+    if(c0==='Discharged'){mode='disc';return;}
+    if(mode==='appr' && c0) approvals.push({member:c0,date:String(r[1]||'').trim(),brokered:/yes/i.test(String(r[2]||'')),issue:String(r[3]||'').trim()});
+    if(mode==='disc' && c0) discharged.push({member:c0,reason:String(r[1]||'').trim()});
+  });
+  return {nonapp,nonappTotal,ytd,monthly,approvals,discharged};
 }
 
-function kpiCard(cls,icon,label,val,sub){
-  return `<div class="kpi ${cls}"><div class="kpi-icon">${icon}</div><div class="kpi-label">${label}</div><div class="kpi-value">${val}</div><div class="kpi-sub">${sub}</div></div>`;
-}
+function kpiCard(cls,icon,label,val,sub){return `<div class="kpi ${cls}"><div class="kpi-icon">${icon}</div><div class="kpi-label">${label}</div><div class="kpi-value">${val}</div><div class="kpi-sub">${sub}</div></div>`;}
 
 function render(d){
-  const cm=new Date().getMonth(); // 0-11
-  const upto=d.monthly.slice(0,cm+1);
-  const ytdIA=upto.reduce((s,m)=>s+m.ia,0);
-  const ytdRA=upto.reduce((s,m)=>s+m.ra,0);
-  const ytdBack=upto.reduce((s,m)=>s+m.back,0);
-  const atRisk=d.counties.filter(c=>/WARNING/i.test(c.status)).length;
-  const followUp=d.nurses.filter(n=>n.overdue>0).length;
-
+  const brokered=d.approvals.filter(a=>a.brokered).length;
+  const curMonthName=new Date().toLocaleDateString('en-US',{month:'long'});
+  const thisMonth=(d.monthly.find(m=>m.m===curMonthName||(m.m==='Febuary'&&curMonthName==='February'))||{n:0}).n;
+  const qmb=d.nonapp.QMB||0;
   document.getElementById('kpis').innerHTML=
-    kpiCard('navy','📈','YTD Total Back',ytdBack.toLocaleString(),'IAs + RAs returned')+
-    kpiCard('sky','📋','YTD IAs',ytdIA.toLocaleString(),'Jan – current month')+
-    kpiCard('purple','📝','YTD RAs',ytdRA.toLocaleString(),'Jan – current month')+
-    kpiCard('red','🚨','Overdue RAs',d.nurseTot.overdue.toLocaleString(),'of '+d.nurseTot.total.toLocaleString()+' assigned')+
-    kpiCard('gold','👩‍⚕️','Follow-Up Nurses',followUp,'of '+d.nurses.length+' nurses')+
-    kpiCard('green','🗺️','Counties at Risk',atRisk,'1-MO or 2-MO warning');
+    kpiCard('green','✅','YTD Approvals',d.ytd,'Jan – Jun 2026')+
+    kpiCard('navy','📋','Nonapproved Total',d.nonappTotal,'Active CCSP pipeline')+
+    kpiCard('sky','🏷️','QMB',qmb,'of '+d.nonappTotal+' nonapproved')+
+    kpiCard('red','🚪','Discharged YTD',d.discharged.length,'Year to date')+
+    kpiCard('gold','🤝','Brokered Approvals',brokered,'of '+d.approvals.length+' recent')+
+    kpiCard('purple','📆','Approvals This Month',thisMonth,curMonthName+' 2026');
 
-  const vlabels=MSHORT.slice(0,Math.max(upto.length,6));
-  const vdata=d.monthly.slice(0,vlabels.length);
-  new Chart(document.getElementById('volChart'),{
-    data:{labels:vlabels,datasets:[
-      {type:'bar',label:'IAs',data:vdata.map(m=>m.ia),backgroundColor:C.sky,borderRadius:5,order:2},
-      {type:'bar',label:'RAs',data:vdata.map(m=>m.ra),backgroundColor:C.purple,borderRadius:5,order:2},
-      {type:'line',label:'Total Back',data:vdata.map(m=>m.back),borderColor:C.gold,backgroundColor:C.gold,tension:.3,pointRadius:4,order:1}
-    ]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}},scales:{y:{beginAtZero:true,grid:{color:'#f1f5f9'}}}}
+  // monthly approvals chart (Jan..current)
+  const cm=new Date().getMonth();
+  const mUpto=d.monthly.slice(0,cm+1);
+  new Chart(document.getElementById('apprChart'),{type:'bar',
+    data:{labels:mUpto.map(m=>MSHORT[m.m]||m.m),datasets:[{label:'Approvals',data:mUpto.map(m=>m.n),backgroundColor:C.green,borderRadius:5}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,grid:{color:'#f1f5f9'}}}}
+  });
+  // donut
+  const labels=Object.keys(d.nonapp), vals=labels.map(k=>d.nonapp[k]);
+  new Chart(document.getElementById('donut'),{type:'doughnut',
+    data:{labels,datasets:[{data:vals,backgroundColor:[C.sky,C.amber,C.slate,C.purple]}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}}}
   });
 
-  new Chart(document.getElementById('techChart'),{type:'line',
-    data:{labels:MSHORT.slice(0,d.tech.length),datasets:[
-      {label:'Total',data:d.tech.map(m=>m.total),borderColor:C.navy,backgroundColor:C.navy,tension:.3,pointRadius:4},
-      {label:'Submitted',data:d.tech.map(m=>m.sub),borderColor:C.sky,backgroundColor:C.sky,tension:.3,pointRadius:4}
-    ]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}},scales:{y:{beginAtZero:true,grid:{color:'#f1f5f9'}}}}
-  });
+  // approvals table
+  document.getElementById('apprCount').textContent=d.approvals.length+' recent';
+  document.getElementById('apprTbody').innerHTML=d.approvals.map(a=>
+    `<tr><td class="primary" style="font-size:12px">${a.member}</td><td>${a.date||'—'}</td><td><span class="badge ${a.brokered?'bg':'br'}">${a.brokered?'Yes':'No'}</span></td><td style="font-size:11px;color:${a.issue?'var(--amber)':'var(--muted)'}">${a.issue||'—'}</td></tr>`
+  ).join('');
 
-  const ns=d.nurses.slice().sort((a,b)=>b.overdue-a.overdue);
-  new Chart(document.getElementById('nurseChart'),{type:'bar',
-    data:{labels:ns.map(n=>n.name),datasets:[
-      {label:'Overdue',data:ns.map(n=>n.overdue),backgroundColor:C.red,borderRadius:3,stack:'s'},
-      {label:'On-Time',data:ns.map(n=>Math.max(0,n.total-n.overdue)),backgroundColor:C.green,borderRadius:3,stack:'s'}
-    ]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}},scales:{x:{stacked:true,grid:{display:false}},y:{stacked:true,beginAtZero:true,grid:{color:'#f1f5f9'}}}}
-  });
-
-  document.getElementById('countyTbody').innerHTML=d.counties.map(c=>{
-    let cls='bn',lbl=c.status||'—';
-    if(/G2G/i.test(c.status)){cls='bg';lbl='🟢 G2G';}
-    else if(/1-MO/i.test(c.status)){cls='bo';lbl='🟠 1-MO';}
-    else if(/2-MO/i.test(c.status)){cls='by';lbl='🟡 2-MO';}
-    return `<tr><td class="primary">${c.name}</td><td class="num">${c.pending}</td><td class="num">${c.total}</td><td class="num">${c.proj}</td><td><span class="badge ${cls}">${lbl}</span></td></tr>`;
+  // discharged table
+  document.getElementById('dischCount').textContent=d.discharged.length+' YTD';
+  document.getElementById('dischTbody').innerHTML=d.discharged.map(x=>{
+    const r=x.reason.toLowerCase();
+    let cls='bn';
+    if(/voluntary/.test(r))cls='bg'; else if(/death/.test(r))cls='br'; else if(/refused|non-?compliance|unable/.test(r))cls='by'; else if(/waiver|transition|moved/.test(r))cls='bb';
+    return `<tr><td class="primary" style="font-size:12px">${x.member}</td><td><span class="badge ${cls}">${x.reason||'—'}</span></td></tr>`;
   }).join('');
 
-  document.getElementById('nurseCount').textContent=followUp+' flagged';
-  document.getElementById('nurseTbody').innerHTML=ns.map(n=>{
-    const pct=n.total?Math.round(n.overdue/n.total*100):0;
-    const flagged=n.overdue>0;
-    const pc=pct>=30?C.red:pct>=15?C.amber:C.green;
-    return `<tr><td class="primary">${n.name}</td><td class="num">${n.overdue}</td><td class="num">${n.total}</td>
-      <td><span style="font-weight:700;color:${pc}">${pct}%</span></td>
-      <td><span class="badge ${flagged?'bo':'bg'}">${flagged?'Follow-Up':'On Track'}</span></td></tr>`;
-  }).join('');
+  // reason breakdown
+  const counts={}; d.discharged.forEach(x=>{const k=x.reason||'Other';counts[k]=(counts[k]||0)+1;});
+  const sorted=Object.entries(counts).sort((a,b)=>b[1]-a[1]);
+  const max=sorted.length?sorted[0][1]:1;
+  const palette=[C.green,C.amber,C.red,C.sky,C.slate,C.purple,C.navy];
+  document.getElementById('reasonBreakdown').innerHTML=sorted.map((e,i)=>
+    `<div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px;"><span style="color:var(--text-sm)">${e[0]}</span><span style="font-weight:700">${e[1]}</span></div><div class="mbar-bg"><div class="mbar-fill" style="width:${Math.round(e[1]/max*100)}%;background:${palette[i%palette.length]}"></div></div></div>`
+  ).join('');
 }
 
 (async function(){
   try{
     const rows=await loadTab(TAB);
-    const d=parseAlliant(rows);
-    if(!d.monthly.length) throw new Error('Could not read the Alliant tab layout.');
+    const d=parseMedicaid(rows);
+    if(!d.monthly.length && !d.approvals.length) throw new Error('Could not read the Medicaid tab layout.');
     document.getElementById('asof').textContent='As of '+new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
     render(d);
     document.getElementById('status').style.display='none';
     document.getElementById('page').style.display='block';
   }catch(e){
     const s=document.getElementById('status');s.className='err';
-    s.innerHTML='Could not load live Alliant data: '+e.message+'<br><br>If the sheet sharing or the Alliant Numbers tab name changed, this page needs a quick update. Reload to retry.';
+    s.innerHTML='Could not load live Medicaid data: '+e.message+'<br><br>If the sheet sharing or the Medicaid tab name changed, this page needs a quick update. Reload to retry.';
   }
 })();
 </script>
