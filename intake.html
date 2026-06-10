@@ -128,6 +128,22 @@ td.primary{font-weight:600;color:var(--text);}
     <div class="chart-wrap"><canvas id="dispoChart" height="190"></canvas></div>
   </div>
 
+  <div class="section-label">Tech Denials</div>
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title">Tech Denials by Month <span>Total vs Submitted</span></div>
+      <div class="chart-wrap"><canvas id="techChart" height="220"></canvas></div>
+      <div class="note">"Approved" isn't tracked separately in the sheet, so the chart shows Total and Submitted.</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Open Tech Denials <span id="techOpenCount" style="color:var(--red);font-weight:700;"></span></div>
+      <div class="tbl-wrap" style="max-height:340px;overflow-y:auto;">
+        <table><thead><tr><th>Member</th><th>CN#</th><th>Date</th><th>Notes / Staff</th></tr></thead>
+        <tbody id="techTbody"></tbody></table>
+      </div>
+    </div>
+  </div>
+
   <div class="section-label">Agency Referral Breakdown</div>
   <div class="card">
     <div class="card-title">Referrals by Agency <span>Year to Date '26</span></div>
@@ -155,7 +171,6 @@ td.primary{font-weight:600;color:var(--text);}
         <tbody id="provTbody"></tbody>
       </table>
     </div>
-    <div class="note">Tech-denial counts and the open-denials member list aren't stored in this tab, so they're not shown here.</div>
   </div>
 
 </div>
@@ -163,6 +178,7 @@ td.primary{font-weight:600;color:var(--text);}
 <script>
 const SHEET_ID='1HXYz9v9gU2HZ5wjaC5YKPxt1p9ReAPd3CyeuVvCA4hk';
 const TAB="Intake Department '26";
+const TAB_ALLIANT="Alliant Numbers '26";  // holds the Tech Denials section
 const MNAMES=['January','Febuary','March','April','May','June'];
 const MSHORT=['Jan','Feb','Mar','Apr','May','Jun'];
 const C={navy:'#0e2a5c',gold:'#f5a623',sky:'#5bb4d8',green:'#1a9e6e',red:'#d93025',amber:'#e8870d',purple:'#6b44c9',slate:'#94a3b8'};
@@ -206,6 +222,36 @@ function parseIntake(rows){
   return {agencies,monthly,pa,totals,providers,metTot};
 }
 
+// Tech denials live in the Alliant tab: a "Current Tech Denials" list + a "Tech Denials by Month" block.
+function parseTech(rows){
+  let openStart=-1,monthStart=-1,countyStart=-1;
+  rows.forEach((r,i)=>{
+    const a=String(r[0]||'').trim();
+    if(a==='Current Tech Denials')openStart=i;
+    else if(a==='Tech Denials by Month')monthStart=i;
+    else if(a==='Due Back by County')countyStart=i;
+  });
+  const open=[];
+  if(openStart>=0){
+    const stop=monthStart>=0?monthStart:rows.length;
+    for(let i=openStart+1;i<stop;i++){
+      const cell=String(rows[i][0]||'').trim(); if(!cell) continue;
+      const m=cell.match(/^(.*?)(\d{3,7})\s*$/);
+      open.push({ name:(m?m[1]:cell).replace(/[,\s]+$/,'').trim(), cn:m?m[2]:'', date:String(rows[i][5]||'').trim(), notes:String(rows[i][6]||'').trim() });
+    }
+  }
+  const FIRST=['Jan','Feb','Mar','Apr','April','May','Jun'];
+  const months=[];
+  if(monthStart>=0){
+    const stop=countyStart>=0?countyStart:rows.length;
+    for(let i=monthStart+1;i<stop;i++){
+      const mm=String(rows[i][0]||'').trim();
+      if(FIRST.includes(mm)) months.push({total:num(rows[i][1]),sub:num(rows[i][2])});
+    }
+  }
+  return {open, months:months.slice(0,6)};
+}
+
 function kpiCard(cls,icon,label,val,sub){
   return `<div class="kpi ${cls}"><div class="kpi-icon">${icon}</div><div class="kpi-label">${label}</div><div class="kpi-value">${val}</div><div class="kpi-sub">${sub}</div></div>`;
 }
@@ -219,7 +265,7 @@ function render(d){
     kpiCard('gold','🔄','Now / Comp',sumNC.toLocaleString(),'Jan – Jun 2026')+
     kpiCard('sky','📄','Active PAs',sumPA.toLocaleString(),'Jan – Jun 2026')+
     kpiCard('purple','🔬','Metriport Success',Math.round(d.metTot.pct)+'%',d.metTot.succ+' / '+d.metTot.entries+' entries')+
-    kpiCard('navy','🏢','Referring Agencies',d.agencies.filter(a=>a.total>0).length,'with referrals YTD');
+    kpiCard('red','⚠️','Open Tech Denials',(d.tech?d.tech.open.length:0),'pending resolution');
 
   // referral chart
   new Chart(document.getElementById('referralChart'),{
@@ -242,6 +288,21 @@ function render(d){
     ]},
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}},scales:{y:{beginAtZero:true,grid:{color:'#f1f5f9'}}}}
   });
+
+  // tech denials chart + open list
+  if(d.tech){
+    new Chart(document.getElementById('techChart'),{type:'bar',
+      data:{labels:MSHORT,datasets:[
+        {label:'Total',data:d.tech.months.map(m=>m.total),backgroundColor:C.navy,borderRadius:4},
+        {label:'Submitted',data:d.tech.months.map(m=>m.sub),backgroundColor:C.sky,borderRadius:4}
+      ]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}},scales:{y:{beginAtZero:true,grid:{color:'#f1f5f9'}}}}
+    });
+    document.getElementById('techOpenCount').textContent=d.tech.open.length+' pending';
+    document.getElementById('techTbody').innerHTML=d.tech.open.map(o=>
+      `<tr><td class="primary" style="font-size:12px">${o.name}</td><td class="num">${o.cn||'—'}</td><td>${o.date||'—'}</td><td style="font-size:12px;color:var(--text-sm)">${o.notes||'—'}</td></tr>`
+    ).join('')||'<tr><td colspan="4" style="color:var(--muted)">No open tech denials.</td></tr>';
+  }
 
   // agency table (sorted desc by total)
   const grand=d.totals.ref||d.agencies.reduce((s,a)=>s+a.total,0);
@@ -268,8 +329,9 @@ function render(d){
 
 (async function(){
   try{
-    const rows=await loadTab(TAB);
+    const [rows, aRows]=await Promise.all([ loadTab(TAB), loadTab(TAB_ALLIANT) ]);
     const d=parseIntake(rows);
+    d.tech=parseTech(aRows);
     if(!d.monthly.length) throw new Error('Could not read the Intake tab layout.');
     document.getElementById('asof').textContent='As of '+new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
     render(d);
