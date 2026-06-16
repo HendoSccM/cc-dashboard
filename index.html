@@ -354,7 +354,7 @@ const NOW = new Date();
 const DATA_DATE = NOW.getFullYear()+'-'+String(NOW.getMonth()+1).padStart(2,'0')+'-'+String(NOW.getDate()).padStart(2,'0');
 const MONTH_WEEKS = 4;
 const WEEK_N = Math.min(5, Math.max(1, Math.ceil(NOW.getDate()/7)));
-const WEEKS_LEFT = Math.max(0.5, MONTH_WEEKS - WEEK_N + 0.5);
+const WEEKS_LEFT = Math.max(0.5, (new Date(NOW.getFullYear(), NOW.getMonth()+1, 0).getDate() - NOW.getDate()) / 7); // actual weeks remaining in the month (days left ÷ 7)
 let DATA_MONTH = NOW.toLocaleDateString('en-US',{month:'long',year:'numeric'});
 
 const TODAY = new Date(DATA_DATE);
