@@ -227,6 +227,35 @@ body {
 .dept-links .soon { color:rgba(255,255,255,.4); font-size:11px; font-weight:600; padding:5px 10px; }
 .brand-wrap{display:flex;align-items:center;gap:13px;}.brand-logo{height:36px;width:auto;background:#fff;padding:5px 9px;border-radius:8px;}
 </style>
+<style>
+#authGate{position:fixed;inset:0;z-index:99999;background:linear-gradient(135deg,#091d42,#1a4e7a);display:flex;align-items:center;justify-content:center;padding:20px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;}
+#authGate .ag-card{background:#fff;border-radius:14px;padding:34px 30px;width:100%;max-width:360px;box-shadow:0 20px 60px rgba(0,0,0,.35);text-align:center;}
+#authGate .ag-logo{height:54px;width:auto;margin-bottom:16px;}
+#authGate .ag-title{font-size:16px;font-weight:800;color:#0d2640;}
+#authGate .ag-sub{font-size:12px;color:#6b7280;margin:6px 0 18px;}
+#authGate input{width:100%;padding:11px 13px;border:1px solid #cdd5e0;border-radius:8px;font-size:14px;margin-bottom:12px;}
+#authGate input:focus{outline:none;border-color:#1a4e7a;box-shadow:0 0 0 3px rgba(26,78,122,.15);}
+#authGate button{width:100%;background:#1a4e7a;color:#fff;border:none;border-radius:8px;padding:11px;font-size:14px;font-weight:700;cursor:pointer;}
+#authGate button:hover{background:#0d2640;}
+#authGate #agErr{color:#dc2626;font-size:12px;font-weight:600;margin-top:10px;min-height:14px;}
+</style>
+<script>
+const SCCM_HASH="d2c9bc4cc9acc04445a83cb21f17df505e73c1c059c8311c31a88cfbdeca76ad";
+async function _sha(s){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');}
+function requireAuth(onUnlock){
+  try{ if(localStorage.getItem('sccm_ok')===SCCM_HASH){ onUnlock(); return; } }catch(e){}
+  function build(){
+    const ov=document.createElement('div'); ov.id='authGate';
+    ov.innerHTML='<div class="ag-card"><img src="logo.png" class="ag-logo" alt="Second Chance CM"><div class="ag-title">Second Chance CM Dashboards</div><div class="ag-sub">Enter the team password to continue</div><input id="agPw" type="password" placeholder="Password" autocomplete="current-password"><button id="agBtn">Enter</button><div id="agErr"></div></div>';
+    document.body.appendChild(ov);
+    const submit=async()=>{ const h=await _sha(document.getElementById('agPw').value); if(h===SCCM_HASH){ try{localStorage.setItem('sccm_ok',SCCM_HASH);}catch(e){} ov.remove(); onUnlock(); } else { document.getElementById('agErr').textContent='Incorrect password. Try again.'; document.getElementById('agPw').value=''; document.getElementById('agPw').focus(); } };
+    document.getElementById('agBtn').onclick=submit;
+    document.getElementById('agPw').addEventListener('keydown',function(e){ if(e.key==='Enter') submit(); });
+    document.getElementById('agPw').focus();
+  }
+  if(document.body) build(); else document.addEventListener('DOMContentLoaded',build);
+}
+</script>
 </head>
 <body>
 
@@ -705,7 +734,7 @@ async function boot(){
       'Reload to try again.';
   }
 }
-boot();
+requireAuth(boot);
 </script>
 
 <div id="emailModal" class="email-modal-bg" onclick="if(event.target===this)closeEmail()">
