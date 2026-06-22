@@ -43,7 +43,7 @@ body {
 
 /* CARDS */
 .cards {
-  display: grid; grid-template-columns: repeat(4, 1fr);
+  display: grid; grid-template-columns: repeat(5, 1fr);
   gap: 12px; padding: 14px 22px 0;
 }
 .card {
@@ -54,6 +54,7 @@ body {
 .card.red    { border-left-color: #e74c3c; }
 .card.amber  { border-left-color: #f59e0b; }
 .card.purple { border-left-color: #8e44ad; }
+.card.green  { border-left-color: #16a34a; }
 .card .cl { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .7px; color: #888; }
 .card .cv { font-size: 26px; font-weight: 800; line-height: 1.1; margin: 4px 0 2px; color: #1a2332; }
 .card .cs { font-size: 11px; color: #999; }
@@ -501,14 +502,16 @@ function renderHeader(){
 }
 
 function renderCards(){
-  let ts=0,to=0,tp=0,behind=0,risk=0,on=0;
+  let ts=0,tc=0,to=0,tp=0,behind=0,risk=0,on=0;
   CC_DATA.forEach(s=>s.team.forEach(cc=>{
-    ts+=(cc.starting||0); to+=(cc.overdue||0); tp+=(cc.pending||0);
+    ts+=(cc.starting||0); tc+=(cc.completed||0); to+=(cc.overdue||0); tp+=(cc.pending||0);
     const {st}=calc(cc);
     if(st==='behind')behind++; else if(st==='risk')risk++; else on++;
   }));
+  const pct = ts ? Math.round(tc/ts*100) : 0;
   document.getElementById('cards').innerHTML=`
     <div class="card blue"><div class="cl">Total ${DATA_MONTH.split(' ')[0]} CPRs</div><div class="cv">${ts}</div><div class="cs">Starting load across all CCs</div></div>
+    <div class="card green"><div class="cl">Total Completed CPRs</div><div class="cv">${tc} <span style="font-size:17px;color:#16a34a;font-weight:800">· ${pct}%</span></div><div class="cs">${pct}% of the ${ts} ${DATA_MONTH.split(' ')[0]} load completed</div></div>
     <div class="card red"><div class="cl">Behind / At Risk</div><div class="cv">${behind+risk}</div><div class="cs">${behind} behind · ${risk} at risk · ${on} on track</div></div>
     <div class="card amber"><div class="cl">Overdue Services</div><div class="cv">${to}</div><div class="cs">Prior-period services still open</div></div>
     <div class="card purple"><div class="cl">Pending Documentation</div><div class="cv">${tp}</div><div class="cs">Visits done · paperwork outstanding</div></div>
@@ -539,8 +542,6 @@ function renderPerf(){
       <table class="acct-table"><thead><tr>
         <th style="text-align:left">Care Coordinator</th>
         <th title="Total CPRs assigned for the month">${DATA_MONTH.split(' ')[0]} Load</th>
-        <th title="CPRs not yet completed this month (Starting − Completed)">Current Total Left</th>
-        <th title="CPRs completed so far this month">Completed</th>
         <th title="Visits completed but docs not filed">Pending Docs</th>
         <th title="Starting CPRs minus completed and pending docs">Visits Remaining</th>
         <th class="th-target" title="Visits Remaining ÷ weeks left — what they need to schedule every week">→ WEEKLY TARGET</th>
@@ -569,8 +570,6 @@ function renderPerf(){
       html+=`<tr class="${rc}">
         <td><span class="cc-name">${cc.name}</span>${ovBadge} <a class="email-link" onclick="openEmail(${si},${ci})">✉ Email</a></td>
         <td class="n-num">${cc.starting||0}</td>
-        <td class="n-num" style="color:#0d6e6e;font-weight:800">${Math.max(0,(cc.starting||0)-(cc.completed||0))}</td>
-        <td>${done}</td>
         <td>${pend}</td>
         <td class="n-bold">${vr}</td>
         <td class="td-target"><div class="tgt-inner ${tc}"><div class="tgt-num">${tgt}</div><div class="tgt-unit">per week</div></div></td>
