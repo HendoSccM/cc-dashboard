@@ -508,10 +508,10 @@ function renderCards(){
     const {st}=calc(cc);
     if(st==='behind')behind++; else if(st==='risk')risk++; else on++;
   }));
-  const pct = ts ? Math.round(tc/ts*100) : 0;
+  const done = tc + tp; const pct = ts ? Math.round(done/ts*100) : 0;
   document.getElementById('cards').innerHTML=`
     <div class="card blue"><div class="cl">Total ${DATA_MONTH.split(' ')[0]} CPRs</div><div class="cv">${ts}</div><div class="cs">Starting load across all CCs</div></div>
-    <div class="card green"><div class="cl">Total Completed CPRs</div><div class="cv">${tc} <span style="font-size:17px;color:#16a34a;font-weight:800">· ${pct}%</span></div><div class="cs">${pct}% of the ${ts} ${DATA_MONTH.split(' ')[0]} load completed</div></div>
+    <div class="card green"><div class="cl">Total Completed CPRs</div><div class="cv">${done} <span style="font-size:17px;color:#16a34a;font-weight:800">· ${pct}%</span></div><div class="cs">${pct}% of the ${ts} ${DATA_MONTH.split(' ')[0]} load · incl. ${tp} pending docs</div></div>
     <div class="card red"><div class="cl">Behind / At Risk</div><div class="cv">${behind+risk}</div><div class="cs">${behind} behind · ${risk} at risk · ${on} on track</div></div>
     <div class="card amber"><div class="cl">Overdue Services</div><div class="cv">${to}</div><div class="cs">Prior-period services still open</div></div>
     <div class="card purple"><div class="cl">Pending Documentation</div><div class="cv">${tp}</div><div class="cs">Visits done · paperwork outstanding</div></div>
