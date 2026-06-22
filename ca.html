@@ -35,9 +35,9 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .formula-box strong { color: #1e3a8a; }
 .formula-eq { background: #fff; border: 1px solid #bfdbfe; border-radius: 5px; padding: 3px 10px; font-weight: 700; font-size: 12px; }
 
-.cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; padding: 14px 22px 0; }
+.cards { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; padding: 14px 22px 0; }
 .card { background: #fff; border-radius: 8px; padding: 12px 16px; box-shadow: 0 1px 4px rgba(0,0,0,.07); border-left: 4px solid #ddd; }
-.card.blue { border-left-color:#2980b9; } .card.red { border-left-color:#e74c3c; } .card.amber { border-left-color:#f59e0b; } .card.purple { border-left-color:#8e44ad; }
+.card.blue { border-left-color:#2980b9; } .card.red { border-left-color:#e74c3c; } .card.amber { border-left-color:#f59e0b; } .card.purple { border-left-color:#8e44ad; } .card.green { border-left-color:#16a34a; }
 .card .cl { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.7px; color:#888; }
 .card .cv { font-size:26px; font-weight:800; line-height:1.1; margin:4px 0 2px; color:#1a2332; }
 .card .cs { font-size:11px; color:#999; }
@@ -187,6 +187,11 @@ const SHEET_ID='1HXYz9v9gU2HZ5wjaC5YKPxt1p9ReAPd3CyeuVvCA4hk';
 const TAB_DEPT="CA Department '26";
 const TAB_HTR="CA - Hard to Reach";
 const BLOCK_COLOR={Jose:'#1e6fa8', Adijat:'#6d28d9'};
+// Communications-analyst teams (supervisors Adijat & Jose). Names match the CA Department tab.
+const CA_TEAMS=[
+  {sup:'Adijat', members:['Leury','Leigniz','Rica','Mikaela']},
+  {sup:'Jose',   members:['Fatima','Michelle','Regine','Kimby']}
+];
 
 const NOW=new Date();
 const DATA_DATE=NOW.getFullYear()+'-'+String(NOW.getMonth()+1).padStart(2,'0')+'-'+String(NOW.getDate()).padStart(2,'0');
@@ -269,16 +274,47 @@ function renderHead(){
   document.getElementById('weekLabel').textContent='Week '+WEEK_N+' of '+DATA_MONTH.split(' ')[0];
 }
 function renderCards(){
-  let ts=0,to=0,tp=0,behind=0,risk=0,on=0;
-  CA.forEach(a=>{ts+=a.starting;to+=a.overdue;tp+=a.pending;const {st}=calc(a);if(st==='behind')behind++;else if(st==='risk')risk++;else on++;});
+  let ts=0,tc=0,to=0,tp=0,behind=0,risk=0,on=0;
+  CA.forEach(a=>{ts+=a.starting;tc+=a.completed;to+=a.overdue;tp+=a.pending;const {st}=calc(a);if(st==='behind')behind++;else if(st==='risk')risk++;else on++;});
+  const done=tc+tp; const pct=ts?Math.round(done/ts*100):0;
   document.getElementById('cards').innerHTML=
     `<div class="card blue"><div class="cl">Total ${DATA_MONTH.split(' ')[0]} MCs</div><div class="cv">${ts.toLocaleString()}</div><div class="cs">Member calls assigned this month</div></div>`+
+    `<div class="card green"><div class="cl">Total Completed MCs</div><div class="cv">${done.toLocaleString()} <span style="font-size:17px;color:#16a34a;font-weight:800">· ${pct}%</span></div><div class="cs">${pct}% of the ${ts.toLocaleString()} ${DATA_MONTH.split(' ')[0]} load · incl. ${tp} pending docs</div></div>`+
     `<div class="card red"><div class="cl">Behind / At Risk</div><div class="cv">${behind+risk}</div><div class="cs">${behind} behind · ${risk} at risk · ${on} on track</div></div>`+
     `<div class="card amber"><div class="cl">Overdue Services</div><div class="cv">${to}</div><div class="cs">Prior-period services still open</div></div>`+
     `<div class="card purple"><div class="cl">Pending Documentation</div><div class="cv">${tp}</div><div class="cs">Calls done · paperwork outstanding</div></div>`;
 }
-function renderPerf(){
-  let html=`<table class="acct-table"><thead><tr>
+function perfRow(a){
+  const {left,tgt,handled,st}=calc(a);
+  const rc=st==='behind'?'r-behind':st==='risk'?'r-risk':'r-on';
+  const tc=st==='on'||st==='done'?'tgt-green':st==='risk'?'tgt-amber':'tgt-red';
+  const pf=st==='on'||st==='done'?'pf-green':st==='risk'?'pf-amber':'pf-red';
+  const sl=st==='done'?'sl-done':st==='on'?'sl-on':st==='risk'?'sl-risk':'sl-behind';
+  let slText;
+  if(st==='none') slText='No load';
+  else if(st==='done') slText='✅ All called';
+  else if(st==='on') slText='✅ On track';
+  else if(st==='risk') slText='⚠️ At risk';
+  else slText='🔴 Behind';
+  const comp=a.completed>0?`<span class="done-n">${a.completed}</span>`:`<span class="n-gray">—</span>`;
+  const pend=a.pending>0?`<span class="minus">−${a.pending}</span>`:`<span class="n-gray">—</span>`;
+  const ov=a.overdue>0?`<span style="color:#dc2626;font-weight:800">${a.overdue}</span>`:`<span class="n-gray">—</span>`;
+  return `<tr class="${rc}">
+    <td><span class="cc-name">${a.name}</span></td>
+    <td class="n-num">${a.starting||0}</td>
+    <td>${comp}</td>
+    <td>${pend}</td>
+    <td class="td-left"><div class="left-inner"><div class="left-num">${left}</div><div class="left-unit">left to call</div></div></td>
+    <td><div class="tgt-inner ${tc}"><div class="tgt-num">${tgt}</div><div class="tgt-unit">needed / wk</div></div></td>
+    <td>${ov}</td>
+    <td class="status-cell"><div class="prog-wrap">
+      <div class="prog-top"><span style="color:#475569">${handled}% handled</span><span style="color:#0d6e6e">${left} left</span></div>
+      <div class="prog-bar"><div class="prog-fill ${pf}" style="width:${handled}%"></div></div>
+      <span class="status-lbl ${sl}">${slText}</span>
+    </div></td>
+  </tr>`;
+}
+const PERF_HEAD=`<thead><tr>
     <th style="text-align:left">Communications Analyst</th>
     <th title="Total member calls assigned for the month">Monthly Total</th>
     <th title="Calls completed so far">Completed</th>
@@ -287,38 +323,32 @@ function renderPerf(){
     <th class="th-target" title="Calls left ÷ weeks remaining — the weekly pace they must keep to finish the month">Avg Needed / Week</th>
     <th>Overdue</th>
     <th style="min-width:190px">Month Status</th>
-  </tr></thead><tbody>`;
-  CA.forEach(a=>{
-    const {left,tgt,handled,st}=calc(a);
-    const rc=st==='behind'?'r-behind':st==='risk'?'r-risk':'r-on';
-    const tc=st==='on'||st==='done'?'tgt-green':st==='risk'?'tgt-amber':'tgt-red';
-    const pf=st==='on'||st==='done'?'pf-green':st==='risk'?'pf-amber':'pf-red';
-    const sl=st==='done'?'sl-done':st==='on'?'sl-on':st==='risk'?'sl-risk':'sl-behind';
-    let slText;
-    if(st==='none') slText='No load';
-    else if(st==='done') slText='✅ All called';
-    else if(st==='on') slText='✅ On track';
-    else if(st==='risk') slText='⚠️ At risk';
-    else slText='🔴 Behind';
-    const comp=a.completed>0?`<span class="done-n">${a.completed}</span>`:`<span class="n-gray">—</span>`;
-    const pend=a.pending>0?`<span class="minus">−${a.pending}</span>`:`<span class="n-gray">—</span>`;
-    const ov=a.overdue>0?`<span style="color:#dc2626;font-weight:800">${a.overdue}</span>`:`<span class="n-gray">—</span>`;
-    html+=`<tr class="${rc}">
-      <td><span class="cc-name">${a.name}</span></td>
-      <td class="n-num">${a.starting||0}</td>
-      <td>${comp}</td>
-      <td>${pend}</td>
-      <td class="td-left"><div class="left-inner"><div class="left-num">${left}</div><div class="left-unit">left to call</div></div></td>
-      <td><div class="tgt-inner ${tc}"><div class="tgt-num">${tgt}</div><div class="tgt-unit">needed / wk</div></div></td>
-      <td>${ov}</td>
-      <td class="status-cell"><div class="prog-wrap">
-        <div class="prog-top"><span style="color:#475569">${handled}% handled</span><span style="color:#0d6e6e">${left} left</span></div>
-        <div class="prog-bar"><div class="prog-fill ${pf}" style="width:${handled}%"></div></div>
-        <span class="status-lbl ${sl}">${slText}</span>
-      </div></td>
-    </tr>`;
+  </tr></thead>`;
+function renderPerf(){
+  const used={};
+  let html='';
+  CA_TEAMS.forEach(t=>{
+    const team=t.members.map(n=>CA.find(a=>a.name===n)).filter(Boolean);
+    team.forEach(a=>used[a.name]=1);
+    if(!team.length) return;
+    const ts=team.reduce((s,a)=>s+a.starting,0);
+    const tp=team.reduce((s,a)=>s+a.pending,0);
+    const tcomp=team.reduce((s,a)=>s+a.completed,0);
+    const done=tcomp+tp; const pct=ts?Math.round(done/ts*100):0;
+    const bh=team.filter(a=>calc(a).st==='behind').length;
+    const col=BLOCK_COLOR[t.sup]||'#555';
+    html+=`<div class="htr-sup-head" style="margin-top:6px">
+        <span class="sup-tag" style="background:${col}">${t.sup}'s Team</span>
+        <span class="htr-cnt">${team.length} analysts · <strong>${ts.toLocaleString()}</strong> total MCs · <span style="color:#16a34a"><strong>${done.toLocaleString()}</strong> completed (${pct}%)</span>${bh>0?` · <span style="color:#991b1b;font-weight:800">⚠ ${bh} behind</span>`:''}</span>
+      </div>
+      <table class="acct-table" style="margin-bottom:22px">${PERF_HEAD}<tbody>${team.map(perfRow).join('')}</tbody></table>`;
   });
-  html+='</tbody></table>';
+  // Any analyst not assigned to a team (and not a supervisor with no load) — surface, don't drop.
+  const extra=CA.filter(a=>!used[a.name] && a.starting>0);
+  if(extra.length){
+    html+=`<div class="htr-sup-head" style="margin-top:6px"><span class="sup-tag" style="background:#555">Unassigned</span><span class="htr-cnt">${extra.length} analyst${extra.length!==1?'s':''}</span></div>
+      <table class="acct-table" style="margin-bottom:22px">${PERF_HEAD}<tbody>${extra.map(perfRow).join('')}</tbody></table>`;
+  }
   document.getElementById('perfContent').innerHTML=html;
 }
 
