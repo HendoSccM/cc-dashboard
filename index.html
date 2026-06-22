@@ -525,6 +525,8 @@ function renderPerf(){
     const ts=sg.team.reduce((s,c)=>s+(c.starting||0),0);
     const to=sg.team.reduce((s,c)=>s+(c.overdue||0),0);
     const tp=sg.team.reduce((s,c)=>s+(c.pending||0),0);
+    const tc=sg.team.reduce((s,c)=>s+(c.completed||0),0);
+    const tdone=tc+tp; const tpct=ts?Math.round(tdone/ts*100):0;
     const bh=sg.team.filter(c=>calc(c).st==='behind').length;
     html+=`<div class="sup-block">
       <div class="sup-head">
@@ -534,6 +536,7 @@ function renderPerf(){
         </div>
         <div class="sup-stats">
           <span><strong>${ts}</strong> total CPRs</span>
+          <span style="color:#16a34a"><strong>${tdone}</strong> completed (${tpct}%)</span>
           <span><strong>${to}</strong> overdue</span>
           <span><strong>${tp}</strong> pending docs</span>
           ${bh>0?`<span style="color:#991b1b;font-weight:800">⚠ ${bh} behind</span>`:''}
