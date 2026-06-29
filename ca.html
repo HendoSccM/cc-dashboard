@@ -231,7 +231,7 @@ function parseCA(rows){
 }
 function calc(a){
   const left=Math.max(0,a.starting - a.completed - a.pending);
-  const tgt=Math.ceil(left/WEEKS_LEFT);
+  const tgt=Math.min(left, Math.ceil(left/WEEKS_LEFT));
   const handled=a.starting? Math.min(100,Math.round((a.starting-left)/a.starting*100)) : 0;
   let st;
   if(a.starting===0) st='none';

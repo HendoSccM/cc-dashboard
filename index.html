@@ -472,7 +472,7 @@ function fd(d){ if(!d) return null; return new Date(d).toLocaleDateString('en-US
 
 function calc(cc){
   const vr  = Math.max(0,(cc.starting||0)-(cc.completed||0)-(cc.pending||0));
-  const tgt = Math.ceil(vr/WEEKS_LEFT);
+  const tgt = Math.min(vr, Math.ceil(vr/WEEKS_LEFT));
   const gap = (cc.sch_wk1||0)-tgt;
   let st = vr===0||(cc.sch_wk1||0)>=tgt-1 ? 'on' : (cc.sch_wk1||0)>=Math.ceil(tgt*.6) ? 'risk' : 'behind';
   return {vr,tgt,gap,st};
