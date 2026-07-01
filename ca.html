@@ -153,7 +153,7 @@ function requireAuth(onUnlock){
 
 <div class="formula-box">
   📞 <strong>Left to Call</strong> = ( Monthly Total − Completed Calls − Pending Docs ) &nbsp;&nbsp;
-  <span class="formula-eq">Weekly Target = Left to Call ÷ weeks remaining</span>&nbsp;&nbsp;
+  <span class="formula-eq">Weekly Target = Left to Call ÷ work weeks in month (3 if 4-week, 4 if 5-week)</span>&nbsp;&nbsp;
   <span style="color:#475569">Completed calls &amp; pending docs both count as handled.</span>
 </div>
 
@@ -198,6 +198,12 @@ const DATA_DATE=NOW.getFullYear()+'-'+String(NOW.getMonth()+1).padStart(2,'0')+'
 const MONTH_WEEKS=4;
 const WEEK_N=Math.min(5,Math.max(1,Math.ceil(NOW.getDate()/7)));
 const WEEKS_LEFT=Math.max(0.5, (new Date(NOW.getFullYear(), NOW.getMonth()+1, 0).getDate() - NOW.getDate()) / 7); // actual weeks remaining in the month (days left ÷ 7)
+// Weekly-target basis (Haddon 2026-06-29, matching the CC page): divide Left to Call by the month's
+// "work weeks" = (calendar weeks the month spans − 1). A 4-week month → 3; a 5-week month → 4 (July 2026 → 4).
+const _firstDOW=new Date(NOW.getFullYear(), NOW.getMonth(), 1).getDay();
+const _daysInMonth=new Date(NOW.getFullYear(), NOW.getMonth()+1, 0).getDate();
+const WEEKS_IN_MONTH=Math.ceil((_firstDOW + _daysInMonth) / 7);
+const WORK_WEEKS=Math.max(1, WEEKS_IN_MONTH - 1);
 const DATA_MONTH=NOW.toLocaleDateString('en-US',{month:'long',year:'numeric'});
 const TODAY=new Date(DATA_DATE);
 
@@ -231,7 +237,7 @@ function parseCA(rows){
 }
 function calc(a){
   const left=Math.max(0,a.starting - a.completed - a.pending);
-  const tgt=Math.min(left, Math.ceil(left/WEEKS_LEFT));
+  const tgt=Math.min(left, Math.ceil(left/WORK_WEEKS));
   const handled=a.starting? Math.min(100,Math.round((a.starting-left)/a.starting*100)) : 0;
   let st;
   if(a.starting===0) st='none';
@@ -320,7 +326,7 @@ const PERF_HEAD=`<thead><tr>
     <th title="Calls completed so far">Completed</th>
     <th title="Calls done, paperwork outstanding — counted as handled">Pending Docs</th>
     <th class="th-left" title="Monthly Total minus completed minus pending docs">→ LEFT TO CALL</th>
-    <th class="th-target" title="Calls left ÷ weeks remaining — the weekly pace they must keep to finish the month">Avg Needed / Week</th>
+    <th class="th-target" title="Calls left ÷ work weeks in month (3 if 4-week month, 4 if 5-week) — the weekly average needed to finish">Avg Needed / Week</th>
     <th>Overdue</th>
     <th style="min-width:190px">Month Status</th>
   </tr></thead>`;
