@@ -69,6 +69,7 @@ td.primary{font-weight:600;color:var(--text);}
 .bg{background:var(--green-lt);color:#166534;} .by{background:#fef9c3;color:#854d0e;} .bo{background:var(--amber-lt);color:#9a3412;} .br{background:var(--red-lt);color:#991b1b;} .bn{background:#e8edf6;color:var(--navy);}
 .region-head td{background:#eef2fb;font-weight:800;font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--navy);padding:7px 12px;border-top:1px solid #dbe3f4;}
 .region-sub td{background:#f8fafc;font-weight:700;color:var(--slate);font-style:italic;}
+.territory-head td{background:#f4f7fd;font-weight:800;color:var(--navy);border-top:1px solid #e3e9f5;}
 .two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
 .note{font-size:11px;color:var(--muted);margin-top:6px;}
 #status{padding:40px 28px;font-size:14px;color:var(--slate);}
@@ -186,6 +187,15 @@ const TAB="Alliant Numbers '26";
 const MSHORT=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const MONTHNAMES=['January','Febuary','February','March','April','May','June','July','August','September','October','November','December'];
 const C={navy:'#0e2a5c',gold:'#f5a623',sky:'#5bb4d8',green:'#1a9e6e',red:'#d93025',amber:'#e8870d',purple:'#6b44c9',slate:'#94a3b8'};
+// Some regions are split into named TERRITORIES the sheet layout doesn't cleanly encode.
+// Edit these county lists if a territory's makeup changes. Each territory's G2G/warning status is
+// pulled from the sheet in order (the status cells found within the region block, top to bottom).
+const TERRITORY_MAP={
+  'Augusta':[
+    {name:'Richmond 1', counties:['Burke','Jefferson','Jenkins','Richmond 1']},
+    {name:'Richmond 2', counties:['Richmond 2','Columbia','McDuffie']}
+  ]
+};
 
 let _cb=0;
 function loadTab(tab){return new Promise(function(res,rej){
@@ -230,7 +240,7 @@ function parseAlliant(rows){
     for(let i=countyStart+1;i<stop;i++){
       const r=rows[i];
       const name=String(r[0]==null?'':r[0]).trim();
-      if(!name) continue;
+      if(!name){ const st=String(r[4]||'').trim(); if(st) counties.push({type:'status',status:st}); continue; } // blank row carrying a subtotal status
       const pRaw=String(r[1]==null?'':r[1]).trim();
       const tRaw=String(r[2]==null?'':r[2]).trim();
       const jRaw=String(r[3]==null?'':r[3]).trim();
@@ -256,20 +266,41 @@ function statusBadge(status){
   else if(/2-MO/i.test(status)){cls='by';lbl='🟡 2-MO';}
   return `<span class="badge ${cls}">${lbl}</span>`;
 }
-// Render the county table with region grouping: region header rows, indented member counties,
-// and an auto-computed subtotal per region. Counties before the first region header render flat.
+function countyRow(c,indent){
+  const pad=indent?' style="padding-left:26px"':'';
+  return `<tr><td class="primary"${pad}>${c.name}</td><td class="num">${c.pending}</td><td class="num">${c.total}</td><td class="num">${c.proj}</td><td>${statusBadge(c.status)}</td></tr>`;
+}
+// Render the county table grouped by region. Regions listed in TERRITORY_MAP are further split into
+// named territories (each showing its own auto subtotal + the G2G/warning status found in the sheet,
+// in top-to-bottom order). Plain regions get one auto subtotal. Counties before the first region header
+// (rare) render flat.
 function renderCounties(items){
-  let html='', cur=null, sub=null;
-  const flush=()=>{ if(cur&&sub.n>0){ html+=`<tr class="region-sub"><td class="primary">${cur} — subtotal</td><td class="num">${sub.p}</td><td class="num">${sub.t}</td><td class="num">${sub.j}</td><td></td></tr>`; } cur=null; sub=null; };
+  const blocks=[{region:null,rows:[],statuses:[]}];
   items.forEach(it=>{
-    if(it.type==='region'){ flush(); cur=it.name; sub={p:0,t:0,j:0,n:0}; html+=`<tr class="region-head"><td colspan="5">🗺️ ${it.name}</td></tr>`; }
-    else {
-      const pad = cur? ' style="padding-left:22px"':'';
-      if(cur){ sub.p+=it.pending; sub.t+=it.total; sub.j+=it.proj; sub.n++; }
-      html+=`<tr><td class="primary"${pad}>${it.name}</td><td class="num">${it.pending}</td><td class="num">${it.total}</td><td class="num">${it.proj}</td><td>${statusBadge(it.status)}</td></tr>`;
+    if(it.type==='region'){ blocks.push({region:it.name, rows:[], statuses: it.status?[it.status]:[]}); }
+    else if(it.type==='status'){ blocks[blocks.length-1].statuses.push(it.status); }
+    else { const b=blocks[blocks.length-1]; b.rows.push(it); if(it.status) b.statuses.push(it.status); }
+  });
+  let html='';
+  blocks.forEach(b=>{
+    if(b.region===null){ b.rows.forEach(c=> html+=countyRow(c,false)); return; }
+    html+=`<tr class="region-head"><td colspan="5">🗺️ ${b.region}</td></tr>`;
+    const terr=TERRITORY_MAP[b.region];
+    if(terr){
+      let si=0;
+      terr.forEach(t=>{
+        const members=t.counties.map(n=> b.rows.find(r=>r.name===n)).filter(Boolean);
+        const sub={p:0,t:0,j:0}; members.forEach(m=>{sub.p+=m.pending;sub.t+=m.total;sub.j+=m.proj;});
+        const st=b.statuses[si++]||'';
+        html+=`<tr class="territory-head"><td class="primary" style="padding-left:14px">${t.name} <span style="color:var(--slate);font-weight:600;font-size:11px">territory</span></td><td class="num">${sub.p}</td><td class="num">${sub.t}</td><td class="num">${sub.j}</td><td>${st?statusBadge(st):''}</td></tr>`;
+        members.forEach(m=> html+=countyRow(m,true));
+      });
+    } else {
+      const sub={p:0,t:0,j:0,n:0};
+      b.rows.forEach(c=>{sub.p+=c.pending;sub.t+=c.total;sub.j+=c.proj;sub.n++; html+=countyRow(c,true);});
+      if(sub.n>0) html+=`<tr class="region-sub"><td class="primary">${b.region} — subtotal</td><td class="num">${sub.p}</td><td class="num">${sub.t}</td><td class="num">${sub.j}</td><td></td></tr>`;
     }
   });
-  flush();
   return html;
 }
 
