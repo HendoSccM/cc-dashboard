@@ -67,6 +67,8 @@ td.num{font-variant-numeric:tabular-nums;font-weight:600;}
 td.primary{font-weight:600;color:var(--text);}
 .badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:700;white-space:nowrap;}
 .bg{background:var(--green-lt);color:#166534;} .by{background:#fef9c3;color:#854d0e;} .bo{background:var(--amber-lt);color:#9a3412;} .br{background:var(--red-lt);color:#991b1b;} .bn{background:#e8edf6;color:var(--navy);}
+.region-head td{background:#eef2fb;font-weight:800;font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--navy);padding:7px 12px;border-top:1px solid #dbe3f4;}
+.region-sub td{background:#f8fafc;font-weight:700;color:var(--slate);font-style:italic;}
 .two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
 .note{font-size:11px;color:var(--muted);margin-top:6px;}
 #status{padding:40px 28px;font-size:14px;color:var(--slate);}
@@ -219,12 +221,22 @@ function parseAlliant(rows){
     const m=String(rows[i][0]||'').trim();
     if(['Jan','Feb','Mar','Apr','April','May','Jun'].includes(m)) tech.push({total:num(rows[i][1]),sub:num(rows[i][2])});
   }}
-  // counties: countyStart+1 .. nurseStart-1, keep rows with a name AND numeric total
+  // counties: countyStart+1 .. nurseStart-1.
+  // A named row with NO pending/total/projected numbers = a REGION header; every other named row is a
+  // county (kept even when total is 0, so newly-added counties still show). Blank-name rows (spacers or
+  // manual subtotals) are skipped — the page computes each region's subtotal itself.
   const counties=[];
   if(countyStart>=0){ const stop=nurseStart>=0?nurseStart:rows.length;
-    for(let i=countyStart+1;i<stop;i++){const r=rows[i];const name=String(r[0]||'').trim();const total=num(r[2]);
-      if(!name||total<=0) continue;
-      counties.push({name,pending:num(r[1]),total,proj:num(r[3]),status:String(r[4]||'').trim()});}}
+    for(let i=countyStart+1;i<stop;i++){
+      const r=rows[i];
+      const name=String(r[0]==null?'':r[0]).trim();
+      if(!name) continue;
+      const pRaw=String(r[1]==null?'':r[1]).trim();
+      const tRaw=String(r[2]==null?'':r[2]).trim();
+      const jRaw=String(r[3]==null?'':r[3]).trim();
+      if(pRaw===''&&tRaw===''&&jRaw===''){ counties.push({type:'region',name,status:String(r[4]||'').trim()}); continue; }
+      counties.push({type:'county',name,pending:num(r[1]),total:num(r[2]),proj:num(r[3]),status:String(r[4]||'').trim()});
+    }}
   // nurses: nurseStart+1 .. end, rows with a name; the totals row has empty name
   const nurses=[]; let nurseTot={overdue:0,total:0};
   if(nurseStart>=0){ for(let i=nurseStart+1;i<rows.length;i++){const r=rows[i];const name=String(r[0]||'').trim();
@@ -237,6 +249,29 @@ function parseAlliant(rows){
 function kpiCard(cls,icon,label,val,sub){
   return `<div class="kpi ${cls}"><div class="kpi-icon">${icon}</div><div class="kpi-label">${label}</div><div class="kpi-value">${val}</div><div class="kpi-sub">${sub}</div></div>`;
 }
+function statusBadge(status){
+  let cls='bn',lbl=status||'—';
+  if(/G2G/i.test(status)){cls='bg';lbl='🟢 G2G';}
+  else if(/1-MO/i.test(status)){cls='bo';lbl='🟠 1-MO';}
+  else if(/2-MO/i.test(status)){cls='by';lbl='🟡 2-MO';}
+  return `<span class="badge ${cls}">${lbl}</span>`;
+}
+// Render the county table with region grouping: region header rows, indented member counties,
+// and an auto-computed subtotal per region. Counties before the first region header render flat.
+function renderCounties(items){
+  let html='', cur=null, sub=null;
+  const flush=()=>{ if(cur&&sub.n>0){ html+=`<tr class="region-sub"><td class="primary">${cur} — subtotal</td><td class="num">${sub.p}</td><td class="num">${sub.t}</td><td class="num">${sub.j}</td><td></td></tr>`; } cur=null; sub=null; };
+  items.forEach(it=>{
+    if(it.type==='region'){ flush(); cur=it.name; sub={p:0,t:0,j:0,n:0}; html+=`<tr class="region-head"><td colspan="5">🗺️ ${it.name}</td></tr>`; }
+    else {
+      const pad = cur? ' style="padding-left:22px"':'';
+      if(cur){ sub.p+=it.pending; sub.t+=it.total; sub.j+=it.proj; sub.n++; }
+      html+=`<tr><td class="primary"${pad}>${it.name}</td><td class="num">${it.pending}</td><td class="num">${it.total}</td><td class="num">${it.proj}</td><td>${statusBadge(it.status)}</td></tr>`;
+    }
+  });
+  flush();
+  return html;
+}
 
 function render(d){
   const cm=new Date().getMonth(); // 0-11
@@ -244,7 +279,7 @@ function render(d){
   const ytdIA=upto.reduce((s,m)=>s+m.ia,0);
   const ytdRA=upto.reduce((s,m)=>s+m.ra,0);
   const ytdBack=upto.reduce((s,m)=>s+m.back,0);
-  const atRisk=d.counties.filter(c=>/WARNING/i.test(c.status)).length;
+  const atRisk=d.counties.filter(c=>c.type!=='region'&&/WARNING/i.test(c.status)).length;
   const followUp=d.nurses.filter(n=>n.overdue>0).length;
 
   document.getElementById('kpis').innerHTML=
@@ -283,13 +318,7 @@ function render(d){
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}},scales:{x:{stacked:true,grid:{display:false}},y:{stacked:true,beginAtZero:true,grid:{color:'#f1f5f9'}}}}
   });
 
-  document.getElementById('countyTbody').innerHTML=d.counties.map(c=>{
-    let cls='bn',lbl=c.status||'—';
-    if(/G2G/i.test(c.status)){cls='bg';lbl='🟢 G2G';}
-    else if(/1-MO/i.test(c.status)){cls='bo';lbl='🟠 1-MO';}
-    else if(/2-MO/i.test(c.status)){cls='by';lbl='🟡 2-MO';}
-    return `<tr><td class="primary">${c.name}</td><td class="num">${c.pending}</td><td class="num">${c.total}</td><td class="num">${c.proj}</td><td><span class="badge ${cls}">${lbl}</span></td></tr>`;
-  }).join('');
+  document.getElementById('countyTbody').innerHTML=renderCounties(d.counties);
 
   document.getElementById('nurseCount').textContent=followUp+' flagged';
   document.getElementById('nurseTbody').innerHTML=ns.map(n=>{
