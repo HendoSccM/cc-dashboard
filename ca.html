@@ -196,7 +196,7 @@ const CA_TEAMS=[
 const NOW=new Date();
 const DATA_DATE=NOW.getFullYear()+'-'+String(NOW.getMonth()+1).padStart(2,'0')+'-'+String(NOW.getDate()).padStart(2,'0');
 const MONTH_WEEKS=4;
-const WEEK_N=Math.min(5,Math.max(1,Math.ceil(NOW.getDate()/7)));
+const WEEK_N=Math.min(5,Math.max(1,Math.ceil((NOW.getDate() + new Date(NOW.getFullYear(), NOW.getMonth(), 1).getDay())/7))); // calendar week-of-month (Sun–Sat rows; July 7 2026 = week 2)
 const WEEKS_LEFT=Math.max(0.5, (new Date(NOW.getFullYear(), NOW.getMonth()+1, 0).getDate() - NOW.getDate()) / 7); // actual weeks remaining in the month (days left ÷ 7)
 // Weekly-target basis (Haddon 2026-06-29, matching the CC page): divide Left to Call by the month's
 // "work weeks" = (calendar weeks the month spans − 1). A 4-week month → 3; a 5-week month → 4 (July 2026 → 4).
