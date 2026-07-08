@@ -182,11 +182,7 @@ function requireAuth(onUnlock){
     <div class="card-title">Referrals by Agency <span>Year to Date '26</span></div>
     <div class="tbl-wrap">
       <table>
-        <thead><tr>
-          <th style="min-width:180px;">Agency</th><th>Total</th><th>Q1</th>
-          <th>Jan</th><th>Feb</th><th>Mar</th><th>Apr</th><th>May</th><th>Jun</th>
-          <th style="min-width:110px;">Share</th>
-        </tr></thead>
+        <thead><tr id="agencyHead"></tr></thead>
         <tbody id="agencyTbody"></tbody>
       </table>
     </div>
@@ -212,8 +208,12 @@ function requireAuth(onUnlock){
 const SHEET_ID='1HXYz9v9gU2HZ5wjaC5YKPxt1p9ReAPd3CyeuVvCA4hk';
 const TAB="Intake Department '26";
 const TAB_ALLIANT="Alliant Numbers '26";  // holds the Tech Denials section
-const MNAMES=['January','Febuary','March','April','May','June'];
-const MSHORT=['Jan','Feb','Mar','Apr','May','Jun'];
+const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const MSHORT=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+// Match a sheet cell (full name OR short, incl. the sheet's "Febuary" misspelling) to a 0-based month index.
+function monthIdx(name){name=String(name||'').trim().toLowerCase();if(!name)return -1;if(name.startsWith('feb'))return 1;for(let k=0;k<12;k++){if(MONTHS[k].toLowerCase().startsWith(name))return k;}return -1;}
+const CUR_M=new Date().getMonth();   // 0=Jan … current month, auto-advances each month
+const N_MONTHS=CUR_M+1;              // months elapsed through the current one
 const C={navy:'#0e2a5c',gold:'#f5a623',sky:'#5bb4d8',green:'#1a9e6e',red:'#d93025',amber:'#e8870d',purple:'#6b44c9',slate:'#94a3b8'};
 
 let _cb=0;
@@ -240,14 +240,14 @@ function parseIntake(rows){
   });
   const agencies=[];
   for(let i=1;i<firstMonth;i++){const r=rows[i];const name=String(r[0]||'').trim();if(!name)continue;
-    agencies.push({name,total:num(r[1]),q1:num(r[2]),jan:num(r[6]),feb:num(r[7]),mar:num(r[8]),apr:num(r[9]),may:num(r[10]),jun:num(r[11])});}
+    agencies.push({name,total:num(r[1]),q1:num(r[2]),mo:Array.from({length:N_MONTHS},(_,k)=>num(r[6+k]))});}
   const monthly=[]; let totals={ref:0,donr:0,pct:0};
   for(let i=firstMonth+1;i<paMonth;i++){const r=rows[i];const m=String(r[0]||'').trim();
     if(m==='Total'){totals={ref:num(r[1]),donr:num(r[2]),pct:num(r[6])};continue;}
-    if(MNAMES.includes(m))monthly.push({ref:num(r[1]),donr:num(r[2]),pct:num(r[6])});}
+    const mi=monthIdx(m); if(mi>=0&&mi<=CUR_M)monthly.push({ref:num(r[1]),donr:num(r[2]),pct:num(r[6])});}
   const pa=[];
   for(let i=paMonth+1;i<prov;i++){const r=rows[i];const m=String(r[0]||'').trim();
-    if(MNAMES.includes(m))pa.push({nowComp:num(r[1]),activePA:num(r[2]),notInt:num(r[6]),noContact:num(r[7])});}
+    const mi=monthIdx(m); if(mi>=0&&mi<=CUR_M)pa.push({nowComp:num(r[1]),activePA:num(r[2]),notInt:num(r[6]),noContact:num(r[7])});}
   const providers=[]; let metTot={entries:0,succ:0,pct:0};
   for(let i=prov+1;i<rows.length;i++){const r=rows[i];const name=String(r[0]||'').trim();
     if(!name){metTot={entries:num(r[8]),succ:num(r[9]),pct:num(r[10])};break;}
@@ -273,16 +273,15 @@ function parseTech(rows){
       open.push({ name:(m?m[1]:cell).replace(/[,\s]+$/,'').trim(), cn:m?m[2]:'', date:String(rows[i][5]||'').trim(), notes:String(rows[i][6]||'').trim() });
     }
   }
-  const FIRST=['Jan','Feb','Mar','Apr','April','May','Jun'];
   const months=[];
   if(monthStart>=0){
     const stop=countyStart>=0?countyStart:rows.length;
     for(let i=monthStart+1;i<stop;i++){
-      const mm=String(rows[i][0]||'').trim();
-      if(FIRST.includes(mm)) months.push({total:num(rows[i][1]),sub:num(rows[i][2])});
+      const mi=monthIdx(rows[i][0]);
+      if(mi>=0&&mi<=CUR_M) months.push({total:num(rows[i][1]),sub:num(rows[i][2])});
     }
   }
-  return {open, months:months.slice(0,6)};
+  return {open, months};
 }
 
 function kpiCard(cls,icon,label,val,sub){
@@ -292,17 +291,18 @@ function kpiCard(cls,icon,label,val,sub){
 function render(d){
   const sumPA=d.pa.reduce((s,x)=>s+x.activePA,0);
   const sumNC=d.pa.reduce((s,x)=>s+x.nowComp,0);
+  const ytdLbl='Jan – '+MSHORT[Math.min(CUR_M,11)]+' 2026';
   document.getElementById('kpis').innerHTML=
-    kpiCard('navy','📥','YTD Referrals',d.totals.ref.toLocaleString(),'Jan – Jun 2026')+
+    kpiCard('navy','📥','YTD Referrals',d.totals.ref.toLocaleString(),ytdLbl)+
     kpiCard('green','✅','DONRs Completed',d.totals.donr.toLocaleString(),d.totals.pct.toFixed(2)+'% completion rate')+
-    kpiCard('gold','🔄','Now / Comp',sumNC.toLocaleString(),'Jan – Jun 2026')+
-    kpiCard('sky','📄','Active PAs',sumPA.toLocaleString(),'Jan – Jun 2026')+
+    kpiCard('gold','🔄','Now / Comp',sumNC.toLocaleString(),ytdLbl)+
+    kpiCard('sky','📄','Active PAs',sumPA.toLocaleString(),ytdLbl)+
     kpiCard('purple','🔬','Metriport Success',Math.round(d.metTot.pct)+'%',d.metTot.succ+' / '+d.metTot.entries+' entries')+
     kpiCard('red','⚠️','Open Tech Denials',(d.tech?d.tech.open.length:0),'pending resolution');
 
   // referral chart
   new Chart(document.getElementById('referralChart'),{
-    data:{labels:MSHORT,datasets:[
+    data:{labels:MSHORT.slice(0,d.monthly.length),datasets:[
       {type:'bar',label:'Referrals',data:d.monthly.map(m=>m.ref),backgroundColor:C.navy,borderRadius:5,yAxisID:'y',order:2},
       {type:'bar',label:'DONRs',data:d.monthly.map(m=>m.donr),backgroundColor:C.sky,borderRadius:5,yAxisID:'y',order:2},
       {type:'line',label:'DONR %',data:d.monthly.map(m=>m.pct),borderColor:C.gold,backgroundColor:C.gold,tension:.3,yAxisID:'y1',order:1,pointRadius:4}
@@ -313,7 +313,7 @@ function render(d){
   // disposition chart
   new Chart(document.getElementById('dispoChart'),{
     type:'bar',
-    data:{labels:MSHORT,datasets:[
+    data:{labels:MSHORT.slice(0,d.pa.length),datasets:[
       {label:'Now/Comp',data:d.pa.map(m=>m.nowComp),backgroundColor:C.green,borderRadius:4},
       {label:'Active PAs',data:d.pa.map(m=>m.activePA),backgroundColor:C.sky,borderRadius:4},
       {label:'Not Interested',data:d.pa.map(m=>m.notInt),backgroundColor:C.amber,borderRadius:4},
@@ -325,7 +325,7 @@ function render(d){
   // tech denials chart + open list
   if(d.tech){
     new Chart(document.getElementById('techChart'),{type:'bar',
-      data:{labels:MSHORT,datasets:[
+      data:{labels:MSHORT.slice(0,d.tech.months.length),datasets:[
         {label:'Total',data:d.tech.months.map(m=>m.total),backgroundColor:C.navy,borderRadius:4},
         {label:'Submitted',data:d.tech.months.map(m=>m.sub),backgroundColor:C.sky,borderRadius:4}
       ]},
@@ -340,14 +340,19 @@ function render(d){
   // agency table (sorted desc by total)
   const grand=d.totals.ref||d.agencies.reduce((s,a)=>s+a.total,0);
   const ag=d.agencies.slice().sort((a,b)=>b.total-a.total);
+  const monCols=MSHORT.slice(0,N_MONTHS);
+  document.getElementById('agencyHead').innerHTML=
+    '<th style="min-width:180px;">Agency</th><th>Total</th><th>Q1</th>'+
+    monCols.map(m=>`<th>${m}</th>`).join('')+
+    '<th style="min-width:110px;">Share</th>';
   document.getElementById('agencyTbody').innerHTML=ag.map(a=>{
     const pct=grand?Math.round(a.total/grand*100):0;
     const share=Math.min(pct*3,100);
     const color=pct>=20?C.navy:pct>=8?C.sky:C.slate;
     const cell=v=>v>0?v:'—';
-    return `<tr><td class="primary">${a.name}</td><td class="num">${a.total||'—'}</td><td class="num">${a.q1||'—'}</td>
-      <td>${cell(a.jan)}</td><td>${cell(a.feb)}</td><td>${cell(a.mar)}</td><td>${cell(a.apr)}</td><td>${cell(a.may)}</td><td>${cell(a.jun)}</td>
-      <td><div class="minibar"><div class="mbar-bg"><div class="mbar-fill" style="width:${share}%;background:${color};"></div></div><span class="mbar-lbl">${pct}%</span></div></td></tr>`;
+    return `<tr><td class="primary">${a.name}</td><td class="num">${a.total||'—'}</td><td class="num">${a.q1||'—'}</td>`+
+      (a.mo||[]).map(v=>`<td>${cell(v)}</td>`).join('')+
+      `<td><div class="minibar"><div class="mbar-bg"><div class="mbar-fill" style="width:${share}%;background:${color};"></div></div><span class="mbar-lbl">${pct}%</span></div></td></tr>`;
   }).join('');
 
   // provider table

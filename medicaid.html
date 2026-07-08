@@ -216,10 +216,11 @@ function kpiCard(cls,icon,label,val,sub){return `<div class="kpi ${cls}"><div cl
 function render(d){
   const brokered=d.approvals.filter(a=>a.brokered).length;
   const curMonthName=new Date().toLocaleDateString('en-US',{month:'long'});
+  const ytdLbl='Jan – '+(MSHORT[curMonthName]||curMonthName)+' 2026';
   const thisMonth=(d.monthly.find(m=>m.m===curMonthName||(m.m==='Febuary'&&curMonthName==='February'))||{n:0}).n;
   const qmb=d.nonapp.QMB||0;
   document.getElementById('kpis').innerHTML=
-    kpiCard('green','✅','YTD Approvals',d.ytd,'Jan – Jun 2026')+
+    kpiCard('green','✅','YTD Approvals',d.ytd,ytdLbl)+
     kpiCard('navy','📋','Nonapproved Total',d.nonappTotal,'Active CCSP pipeline')+
     kpiCard('sky','🏷️','QMB',qmb,'of '+d.nonappTotal+' nonapproved')+
     kpiCard('red','🚪','Discharged YTD',d.discharged.length,'Year to date')+

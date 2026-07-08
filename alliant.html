@@ -228,8 +228,9 @@ function parseAlliant(rows){
   // tech monthly (Total col1, Submitted col2)
   const tech=[];
   if(monthTech>=0){ for(let i=monthTech+1;i<(countyStart>=0?countyStart:rows.length);i++){
-    const m=String(rows[i][0]||'').trim();
-    if(['Jan','Feb','Mar','Apr','April','May','Jun'].includes(m)) tech.push({total:num(rows[i][1]),sub:num(rows[i][2])});
+    const m=String(rows[i][0]||'').trim().toLowerCase().slice(0,3);
+    const mi=MSHORT.findIndex(s=>s.toLowerCase()===m);
+    if(mi>=0 && mi<=new Date().getMonth()) tech.push({total:num(rows[i][1]),sub:num(rows[i][2])});
   }}
   // counties: countyStart+1 .. nurseStart-1.
   // A named row with NO pending/total/projected numbers = a REGION header; every other named row is a
