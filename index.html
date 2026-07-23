@@ -288,7 +288,7 @@ function requireAuth(onUnlock){
 </div>
 
 <div class="formula-box">
-  &#128208; <strong>Weekly Target</strong> = ( Starting CPRs &minus; Completed &minus; Pending Docs ) &divide; work weeks in month (3 if 4-week month, 4 if 5-week), rounded up &nbsp;&nbsp;
+  &#128208; <strong>Weekly Target</strong> = ( Starting CPRs &minus; Completed &minus; Pending Docs ) &divide; work weeks left this month (starts at 3&ndash;4, counts down each week), rounded up &nbsp;&nbsp;
   <span class="formula-eq">Visits Remaining &divide; Wks Left = CPRs/week needed to finish on time</span>
 </div>
 
@@ -394,6 +394,9 @@ const _firstDOW = new Date(NOW.getFullYear(), NOW.getMonth(), 1).getDay();
 const _daysInMonth = new Date(NOW.getFullYear(), NOW.getMonth()+1, 0).getDate();
 const WEEKS_IN_MONTH = Math.ceil((_firstDOW + _daysInMonth) / 7);
 const WORK_WEEKS = Math.max(1, WEEKS_IN_MONTH - 1);
+// Work weeks LEFT = total work weeks minus weeks already elapsed (WEEK_N-1), floored at 1.
+// July 2026: starts at 4 (wk1), counts down 4→3→2→1 so the average reflects the time actually left.
+const WORK_WEEKS_LEFT = Math.max(1, WORK_WEEKS - (WEEK_N - 1));
 let DATA_MONTH = NOW.toLocaleDateString('en-US',{month:'long',year:'numeric'});
 
 const TODAY = new Date(DATA_DATE);
@@ -478,7 +481,7 @@ function fd(d){ if(!d) return null; return new Date(d).toLocaleDateString('en-US
 
 function calc(cc){
   const vr  = Math.max(0,(cc.starting||0)-(cc.completed||0)-(cc.pending||0));
-  const tgt = Math.min(vr, Math.ceil(vr/WORK_WEEKS));
+  const tgt = Math.min(vr, Math.ceil(vr/WORK_WEEKS_LEFT));
   const gap = (cc.sch_wk1||0)-tgt;
   let st = vr===0||(cc.sch_wk1||0)>=tgt-1 ? 'on' : (cc.sch_wk1||0)>=Math.ceil(tgt*.6) ? 'risk' : 'behind';
   return {vr,tgt,gap,st};
@@ -553,7 +556,7 @@ function renderPerf(){
         <th title="Total CPRs assigned for the month">${DATA_MONTH.split(' ')[0]} Load</th>
         <th title="Visits completed but docs not filed">Pending Docs</th>
         <th title="Starting CPRs minus completed and pending docs">Visits Remaining</th>
-        <th class="th-target" title="Visits Remaining ÷ work weeks in month (3 if 4-week month, 4 if 5-week) — the weekly average needed to finish">→ WEEKLY TARGET</th>
+        <th class="th-target" title="Visits Remaining ÷ work weeks LEFT this month (starts at 3–4, counts down each week) — the weekly average needed to finish">→ WEEKLY TARGET</th>
         <th>Wk ${WEEK_N} Sched'd</th>
         <th>Schedule Check</th>
         <th>Overdue</th>

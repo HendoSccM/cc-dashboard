@@ -153,7 +153,7 @@ function requireAuth(onUnlock){
 
 <div class="formula-box">
   📞 <strong>Left to Call</strong> = ( Monthly Total − Completed Calls − Pending Docs ) &nbsp;&nbsp;
-  <span class="formula-eq">Weekly Target = Left to Call ÷ work weeks in month (3 if 4-week, 4 if 5-week)</span>&nbsp;&nbsp;
+  <span class="formula-eq">Weekly Target = Left to Call ÷ work weeks left this month (starts at 3–4, counts down weekly)</span>&nbsp;&nbsp;
   <span style="color:#475569">Completed calls &amp; pending docs both count as handled.</span>
 </div>
 
@@ -204,6 +204,8 @@ const _firstDOW=new Date(NOW.getFullYear(), NOW.getMonth(), 1).getDay();
 const _daysInMonth=new Date(NOW.getFullYear(), NOW.getMonth()+1, 0).getDate();
 const WEEKS_IN_MONTH=Math.ceil((_firstDOW + _daysInMonth) / 7);
 const WORK_WEEKS=Math.max(1, WEEKS_IN_MONTH - 1);
+// Work weeks LEFT = total work weeks minus weeks elapsed (WEEK_N-1), floored at 1 (counts down each week).
+const WORK_WEEKS_LEFT=Math.max(1, WORK_WEEKS - (WEEK_N - 1));
 const DATA_MONTH=NOW.toLocaleDateString('en-US',{month:'long',year:'numeric'});
 const TODAY=new Date(DATA_DATE);
 
@@ -237,7 +239,7 @@ function parseCA(rows){
 }
 function calc(a){
   const left=Math.max(0,a.starting - a.completed - a.pending);
-  const tgt=Math.min(left, Math.ceil(left/WORK_WEEKS));
+  const tgt=Math.min(left, Math.ceil(left/WORK_WEEKS_LEFT));
   const handled=a.starting? Math.min(100,Math.round((a.starting-left)/a.starting*100)) : 0;
   let st;
   if(a.starting===0) st='none';
@@ -326,7 +328,7 @@ const PERF_HEAD=`<thead><tr>
     <th title="Calls completed so far">Completed</th>
     <th title="Calls done, paperwork outstanding — counted as handled">Pending Docs</th>
     <th class="th-left" title="Monthly Total minus completed minus pending docs">→ LEFT TO CALL</th>
-    <th class="th-target" title="Calls left ÷ work weeks in month (3 if 4-week month, 4 if 5-week) — the weekly average needed to finish">Avg Needed / Week</th>
+    <th class="th-target" title="Calls left ÷ work weeks LEFT this month (starts at 3–4, counts down each week) — the weekly average needed to finish">Avg Needed / Week</th>
     <th>Overdue</th>
     <th style="min-width:190px">Month Status</th>
   </tr></thead>`;
