@@ -1,770 +1,713 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CC Accountability Dashboard</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SCCM Situational Prompt Library</title>
 <style>
-:root { color-scheme: light; }
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background: #f0f2f6; color: #1a2332; font-size: 13px; line-height: 1.4;
-}
-
-.header {
-  background: linear-gradient(120deg, #0d2640, #1a4e7a);
-  color: #fff; padding: 14px 22px;
-  display: flex; justify-content: space-between; align-items: center;
-}
-.header h1 { font-size: 16px; font-weight: 700; }
-.header p  { font-size: 11px; opacity: .6; margin-top: 2px; }
-.header-right { display: flex; align-items: center; gap: 8px; }
-.pill {
-  padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 700;
-}
-.pill-month { background: #e74c3c; color: #fff; }
-.pill-date  { background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.2); }
-
-/* FORMULA BOX */
-.formula-box {
-  background: #eef6ff; border-bottom: 2px solid #bfdbfe;
-  padding: 10px 22px; font-size: 12px; color: #1e40af;
-  display: flex; align-items: center; gap: 10px;
-}
-.formula-box strong { color: #1e3a8a; }
-.formula-eq {
-  background: #fff; border: 1px solid #bfdbfe; border-radius: 5px;
-  padding: 3px 10px; font-weight: 700; font-size: 12px; white-space: nowrap;
-}
-
-/* CARDS */
-.cards {
-  display: grid; grid-template-columns: repeat(5, 1fr);
-  gap: 12px; padding: 14px 22px 0;
-}
-.card {
-  background: #fff; border-radius: 8px; padding: 12px 16px;
-  box-shadow: 0 1px 4px rgba(0,0,0,.07); border-left: 4px solid #ddd;
-}
-.card.blue   { border-left-color: #2980b9; }
-.card.red    { border-left-color: #e74c3c; }
-.card.amber  { border-left-color: #f59e0b; }
-.card.purple { border-left-color: #8e44ad; }
-.card.green  { border-left-color: #16a34a; }
-.card .cl { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .7px; color: #888; }
-.card .cv { font-size: 26px; font-weight: 800; line-height: 1.1; margin: 4px 0 2px; color: #1a2332; }
-.card .cs { font-size: 11px; color: #999; }
-
-/* TABS */
-.tabs { display: flex; gap: 3px; padding: 14px 22px 0; }
-.tab-btn {
-  padding: 8px 18px; border-radius: 7px 7px 0 0; cursor: pointer;
-  font-size: 12px; font-weight: 700; color: #555;
-  background: #dde1ea; border: 1px solid #cdd1dc; border-bottom: none;
-  transition: all .12s;
-}
-.tab-btn.active { background: #fff; color: #0d2640; border-color: #c8cdd8; }
-
-.content-wrap {
-  background: #fff; margin: 0 22px 22px;
-  border: 1px solid #c8cdd8; border-radius: 0 8px 8px 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,.06); padding: 20px 20px;
-}
-.tab-pane { display: none; }
-.tab-pane.active { display: block; }
-
-/* LAST UPDATED */
-.last-updated {
-  font-size: 11px; color: #9ca3af; margin-bottom: 16px;
-  display: flex; align-items: center; gap: 6px;
-}
-.last-updated span { color: #374151; font-weight: 600; }
-
-/* SUP BLOCK */
-.sup-block { margin-bottom: 26px; }
-.sup-head {
-  display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 10px;
-}
-.sup-tag {
-  color: #fff; padding: 4px 13px; border-radius: 5px;
-  font-size: 10px; font-weight: 800; letter-spacing: .5px; text-transform: uppercase;
-}
-.sup-stats { font-size: 11px; color: #888; display: flex; gap: 14px; }
-.sup-stats strong { color: #374151; }
-
-/* TABLE */
-.acct-table { width: 100%; border-collapse: collapse; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; }
-.acct-table thead th {
-  background: #f4f6fa; padding: 9px 10px; font-size: 10px; font-weight: 700;
-  text-transform: uppercase; letter-spacing: .4px; color: #6b7280;
-  text-align: center; border-bottom: 2px solid #e4e8ef; white-space: nowrap;
-}
-.acct-table thead th:first-child { text-align: left; min-width: 150px; }
-.acct-table thead th.th-target { background: #1a4e7a; color: #fff; }
-.acct-table tbody td {
-  padding: 10px 10px; border-bottom: 1px solid #f0f2f6;
-  vertical-align: middle; text-align: center;
-}
-.acct-table tbody td:first-child { text-align: left; }
-.acct-table tbody tr:last-child td { border-bottom: none; }
-.acct-table tbody tr.r-on-track td { background: #f0fdf6; }
-.acct-table tbody tr.r-at-risk  td { background: #fffbeb; }
-.acct-table tbody tr.r-behind   td { background: #fff5f5; }
-.acct-table tbody tr:hover td { filter: brightness(.97); }
-
-.cc-name { font-weight: 700; font-size: 13px; color: #0d2640; }
-.cc-ov {
-  display: inline-block; margin-left: 5px; vertical-align: middle;
-  background: #fde8e6; color: #9a1f18; font-size: 9px; font-weight: 800;
-  padding: 1px 5px; border-radius: 10px;
-}
-.cc-ov.hi { background: #fee2e2; }
-.n-gray { color: #bbb; font-style: italic; }
-.n-num  { font-weight: 600; font-size: 13px; }
-.n-bold { font-weight: 800; font-size: 14px; }
-.n-warn { color: #dc2626; font-weight: 800; }
-
-/* TARGET CELL */
-.td-target { padding: 0 !important; }
-.tgt-inner {
-  display: flex; flex-direction: column; align-items: center;
-  justify-content: center; padding: 10px 6px; height: 100%;
-}
-.tgt-num  { font-size: 24px; font-weight: 900; line-height: 1; letter-spacing: -1px; }
-.tgt-unit { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .7px; margin-top: 2px; opacity: .7; }
-.tgt-green { background: #dcfce7; } .tgt-green .tgt-num { color: #166534; }
-.tgt-amber { background: #fef3c7; } .tgt-amber .tgt-num { color: #92400e; }
-.tgt-red   { background: #fee2e2; } .tgt-red   .tgt-num { color: #991b1b; }
-
-/* PACE BADGE */
-.pace-badge {
-  display: inline-flex; align-items: center; gap: 4px;
-  padding: 3px 9px; border-radius: 20px; font-size: 11px; font-weight: 700; white-space: nowrap;
-}
-.p-on    { background: #dcfce7; color: #166534; }
-.p-close { background: #dbeafe; color: #1e40af; }
-.p-short { background: #fef3c7; color: #92400e; }
-.p-behind{ background: #fee2e2; color: #991b1b; }
-.p-ahead { background: #f0fdf4; color: #166534; border: 1px solid #86efac; }
-
-.talking-pt { font-size: 12px; color: #374151; text-align: left !important; max-width: 240px; }
-.tp-warn { color: #92400e; font-weight: 600; }
-.tp-red  { color: #991b1b; font-weight: 700; }
-.no-data { color: #bbb; font-style: italic; }
-
-/* HTR */
-.htr-filters { display: flex; gap: 7px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
-.htr-fl { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; color: #9ca3af; }
-.fbt {
-  padding: 5px 13px; border-radius: 20px; border: 1px solid #d1d5db;
-  font-size: 11px; font-weight: 600; cursor: pointer; background: #fff; color: #555;
-  transition: all .12s;
-}
-.fbt.active { background: #0d2640; color: #fff; border-color: #0d2640; }
-.fbt:hover:not(.active) { background: #f3f4f6; }
-
-.htr-sup { margin-bottom: 22px; }
-.htr-sup-head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
-.htr-cnt { font-size: 11px; color: #888; }
-
-.htr-tbl { width: 100%; border-collapse: collapse; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; }
-.htr-tbl thead th {
-  background: #f4f6fa; padding: 8px 10px; font-size: 10px; font-weight: 700;
-  text-transform: uppercase; letter-spacing: .4px; color: #6b7280;
-  text-align: left; border-bottom: 2px solid #e4e8ef; white-space: nowrap;
-}
-.htr-tbl tbody td { padding: 9px 10px; border-bottom: 1px solid #f0f2f6; vertical-align: middle; }
-.htr-tbl tbody tr:last-child td { border-bottom: none; }
-.htr-tbl tbody tr:hover td { background: #fafbfd; }
-
-.m-name { font-weight: 700; color: #0d2640; }
-.m-cn   { color: #9ca3af; font-size: 11px; display: block; }
-.hold-tag {
-  display: inline-block; background: #dc2626; color: #fff;
-  font-size: 8.5px; font-weight: 800; padding: 1px 5px; border-radius: 3px;
-  letter-spacing: .4px; margin-left: 4px; vertical-align: middle;
-}
-.days-num { font-weight: 800; font-size: 13px; }
-.dc { color: #991b1b; } .dh { color: #c2410c; } .dm { color: #92400e; } .dg { color: #166534; }
-.urg { display: inline-block; padding: 3px 8px; border-radius: 12px; font-size: 10.5px; font-weight: 700; white-space: nowrap; }
-.u-crit { background: #fee2e2; color: #991b1b; }
-.u-high { background: #ffedd5; color: #c2410c; }
-.u-med  { background: #fef3c7; color: #92400e; }
-.u-low  { background: #dcfce7; color: #166534; }
-.u-rec  { background: #dbeafe; color: #1e40af; }
-.sy { color: #16a34a; font-weight: 800; } .sn { color: #dc2626; font-weight: 800; }
-
-/* STATUS / LOADING */
-#status { padding: 30px 22px; font-size: 13px; color: #6b7280; }
-#status.err { color: #991b1b; }
-.refresh-note { font-size: 10px; color: #9ca3af; padding: 0 22px 14px; }
-
-/* EMAIL LINK + MODAL */
-.email-link { display:inline-block; margin-left:8px; font-size:11px; font-weight:700; color:#1a4e7a; cursor:pointer; vertical-align:middle; white-space:nowrap; }
-.email-link:hover { text-decoration:underline; }
-.email-modal-bg { display:none; position:fixed; inset:0; background:rgba(13,38,64,.55); z-index:1000; align-items:center; justify-content:center; padding:20px; }
-.email-modal { background:#fff; border-radius:10px; width:100%; max-width:680px; max-height:88vh; display:flex; flex-direction:column; box-shadow:0 12px 40px rgba(0,0,0,.3); overflow:hidden; }
-.email-modal-head { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; padding:14px 18px; border-bottom:1px solid #e5e7eb; }
-.email-modal-head strong { font-size:14px; color:#0d2640; }
-.em-sub { font-size:11px; color:#6b7280; margin-top:3px; }
-.em-x { background:none; border:none; font-size:18px; color:#9ca3af; cursor:pointer; line-height:1; padding:2px 4px; }
-.em-x:hover { color:#374151; }
-#emBody { flex:1; margin:0; border:none; border-bottom:1px solid #e5e7eb; padding:16px 18px; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; font-size:12.5px; line-height:1.5; color:#1a2332; resize:none; outline:none; white-space:pre-wrap; }
-.email-modal-foot { display:flex; align-items:center; gap:12px; padding:12px 18px; }
-.em-copy { background:#1a4e7a; color:#fff; border:none; border-radius:6px; padding:9px 18px; font-size:12px; font-weight:700; cursor:pointer; }
-.em-copy:hover { background:#0d2640; }
-.em-copied { font-size:12px; font-weight:700; color:#166534; }
-
-/* DEPARTMENT SWITCHER BAR */
-.dept-bar { background:#091d42; }
-.dept-bar-inner { display:flex; align-items:center; gap:18px; padding:8px 22px; flex-wrap:wrap; }
-.dept-brand { font-weight:800; font-size:12px; letter-spacing:.3px; color:rgba(255,255,255,.9); }
-.dept-links { display:flex; gap:6px; align-items:center; flex-wrap:wrap; }
-.dept-links a { color:rgba(255,255,255,.75); text-decoration:none; font-size:12px; font-weight:700; padding:5px 12px; border-radius:6px; }
-.dept-links a:hover { background:rgba(255,255,255,.12); color:#fff; }
-.dept-links a.active { background:#f5a623; color:#091d42; }
-.dept-links .soon { color:rgba(255,255,255,.4); font-size:11px; font-weight:600; padding:5px 10px; }
-.brand-wrap{display:flex;align-items:center;gap:13px;}.brand-logo{height:36px;width:auto;background:#fff;padding:5px 9px;border-radius:8px;}
-</style>
-<style>
-#authGate{position:fixed;inset:0;z-index:99999;background:linear-gradient(135deg,#091d42,#1a4e7a);display:flex;align-items:center;justify-content:center;padding:20px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;}
-#authGate .ag-card{background:#fff;border-radius:14px;padding:34px 30px;width:100%;max-width:360px;box-shadow:0 20px 60px rgba(0,0,0,.35);text-align:center;}
-#authGate .ag-logo{height:54px;width:auto;margin-bottom:16px;}
-#authGate .ag-title{font-size:16px;font-weight:800;color:#0d2640;}
-#authGate .ag-sub{font-size:12px;color:#6b7280;margin:6px 0 18px;}
-#authGate input{width:100%;padding:11px 13px;border:1px solid #cdd5e0;border-radius:8px;font-size:14px;margin-bottom:12px;}
-#authGate input:focus{outline:none;border-color:#1a4e7a;box-shadow:0 0 0 3px rgba(26,78,122,.15);}
-#authGate button{width:100%;background:#1a4e7a;color:#fff;border:none;border-radius:8px;padding:11px;font-size:14px;font-weight:700;cursor:pointer;}
-#authGate button:hover{background:#0d2640;}
-#authGate #agErr{color:#dc2626;font-size:12px;font-weight:600;margin-top:10px;min-height:14px;}
-</style>
-<script>
-const SCCM_HASH="d2c9bc4cc9acc04445a83cb21f17df505e73c1c059c8311c31a88cfbdeca76ad";
-async function _sha(s){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');}
-function requireAuth(onUnlock){
-  try{ if(localStorage.getItem('sccm_ok')===SCCM_HASH){ onUnlock(); return; } }catch(e){}
-  function build(){
-    const ov=document.createElement('div'); ov.id='authGate';
-    ov.innerHTML='<div class="ag-card"><img src="logo.png" class="ag-logo" alt="Second Chance CM"><div class="ag-title">Second Chance CM Dashboards</div><div class="ag-sub">Enter the team password to continue</div><input id="agPw" type="password" placeholder="Password" autocomplete="current-password"><button id="agBtn">Enter</button><div id="agErr"></div></div>';
-    document.body.appendChild(ov);
-    const submit=async()=>{ const h=await _sha(document.getElementById('agPw').value); if(h===SCCM_HASH){ try{localStorage.setItem('sccm_ok',SCCM_HASH);}catch(e){} ov.remove(); onUnlock(); } else { document.getElementById('agErr').textContent='Incorrect password. Try again.'; document.getElementById('agPw').value=''; document.getElementById('agPw').focus(); } };
-    document.getElementById('agBtn').onclick=submit;
-    document.getElementById('agPw').addEventListener('keydown',function(e){ if(e.key==='Enter') submit(); });
-    document.getElementById('agPw').focus();
+  :root{
+    --ink:#11253F; --muted:#5B6E86;
+    --teal:#023E8A; --teal-deep:#012A5E; --teal-soft:#E4F3FB;
+    --sage:#4E77B0;
+    --gold:#FFB703; --aqua:#90E0EF;
+    --paper:#F4F8FC; --card:#FFFFFF; --line:#DBE6F1;
+    --amber-ink:#8A5A00; --amber-bg:#FFF4DA; --amber-line:#F3D68C;
+    --danger-ink:#9E3A3A; --danger-bg:#F8E7E7; --danger-line:#E3B9B9;
+    --ok:#2E7D5B;
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+    --sans:"Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
+    --mono:"SFMono-Regular","SF Mono","Cascadia Code",Consolas,"Roboto Mono",ui-monospace,monospace;
   }
-  if(document.body) build(); else document.addEventListener('DOMContentLoaded',build);
-}
-</script>
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);
+    line-height:1.55;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+  .wrap{max-width:1000px;margin:0 auto;padding:0 22px}
+
+  /* ---------- hero ---------- */
+  .hero{background:var(--teal-deep);color:#EAF3FB;padding:34px 0 30px}
+  .hero .eyebrow{font-size:12px;letter-spacing:.16em;text-transform:uppercase;
+    color:#8FC7E6;font-weight:700;margin-bottom:10px}
+  .hero h1{font-family:var(--serif);font-weight:600;font-size:clamp(30px,5vw,46px);
+    line-height:1.05;margin:0 0 10px;color:#FFFFFF;letter-spacing:.005em}
+  .hero .lede{font-size:17px;color:#C9DEF3;max-width:60ch;margin:0 0 26px}
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px}
+  .step{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);
+    border-radius:12px;padding:14px 16px}
+  .step .n{font-family:var(--serif);font-size:22px;color:#FFB703;font-weight:600;line-height:1}
+  .step .t{margin-top:7px;font-size:14.5px;color:#EAF3FB}
+  .step .t b{color:#fff;font-weight:700}
+  .reassure{font-size:14px;color:#A9C6E4}
+  .reassure b{color:#EAF3FB}
+  @media(max-width:640px){.steps{grid-template-columns:1fr}}
+
+  /* ---------- finder ---------- */
+  .finder{padding:30px 0 6px}
+  .finder h2, .verify h2{font-family:var(--serif);font-weight:600;font-size:23px;margin:0 0 4px;color:var(--teal-deep)}
+  .finder p.sub{margin:0 0 16px;color:var(--muted);font-size:14.5px}
+  .finder-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  @media(max-width:640px){.finder-grid{grid-template-columns:1fr}}
+  .frow{display:flex;align-items:center;gap:12px;width:100%;text-align:left;cursor:pointer;
+    background:var(--card);border:1px solid var(--line);border-radius:10px;padding:11px 13px;
+    font-family:var(--sans);font-size:14.5px;color:var(--ink);transition:border-color .15s,transform .12s,box-shadow .15s}
+  .frow:hover{border-color:var(--sage);box-shadow:0 2px 10px rgba(2,62,138,.08);transform:translateY(-1px)}
+  .frow:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+  .frow .pill{flex:none;min-width:26px;height:26px;border-radius:7px;background:var(--teal-soft);
+    color:var(--teal);font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center}
+  .frow .sit{color:var(--muted)}
+  .frow .sit b{color:var(--ink);font-weight:600}
+
+  /* ---------- toolbar ---------- */
+  .toolbar{position:sticky;top:0;z-index:20;background:rgba(244,248,252,.92);
+    backdrop-filter:saturate(1.2) blur(6px);border-bottom:1px solid var(--line);
+    padding:12px 0;margin-top:22px}
+  .toolbar .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+  .search{flex:1;min-width:230px;position:relative}
+  .search input{width:100%;font-family:var(--sans);font-size:15px;color:var(--ink);
+    padding:11px 13px 11px 40px;border:1px solid var(--line);border-radius:10px;background:#fff}
+  .search input:focus{outline:2px solid var(--teal);outline-offset:1px;border-color:var(--teal)}
+  .search svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--sage)}
+  .chips{display:flex;gap:7px;flex-wrap:wrap}
+  .chip{font-family:var(--sans);font-size:13px;font-weight:600;color:var(--teal);
+    background:#fff;border:1px solid var(--line);border-radius:999px;padding:8px 13px;cursor:pointer;
+    transition:all .14s}
+  .chip:hover{border-color:var(--sage)}
+  .chip[aria-pressed="true"]{background:var(--teal);color:#fff;border-color:var(--teal)}
+  .chip:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+
+  /* ---------- categories & cards ---------- */
+  main{padding:8px 0 10px}
+  .cat{margin-top:30px}
+  .cat-head{display:flex;align-items:baseline;gap:12px;margin-bottom:14px}
+  .cat-letter{font-family:var(--serif);font-size:15px;font-weight:700;color:#fff;background:var(--sage);
+    width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex:none}
+  .cat-head h3{font-family:var(--serif);font-weight:600;font-size:21px;margin:0;color:var(--teal-deep)}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;
+    padding:22px 22px 20px;margin-bottom:16px;scroll-margin-top:84px;
+    box-shadow:0 1px 2px rgba(2,40,90,.05);transition:box-shadow .18s,border-color .18s}
+  .card:hover{border-color:#C5D8EC;box-shadow:0 4px 16px rgba(2,40,90,.07)}
+  .card.flash{animation:ring 1.6s ease}
+  @keyframes ring{0%{box-shadow:0 0 0 0 rgba(18,74,71,.0)}12%{box-shadow:0 0 0 4px rgba(144,224,239,.75)}100%{box-shadow:0 1px 2px rgba(2,40,90,.05)}}
+  .card-head{display:flex;align-items:center;gap:13px;margin-bottom:12px}
+  .num{font-family:var(--serif);font-weight:700;font-size:17px;color:var(--teal);
+    background:var(--teal-soft);border-radius:9px;width:38px;height:38px;flex:none;
+    display:flex;align-items:center;justify-content:center}
+  .card-title{font-family:var(--serif);font-weight:600;font-size:19px;color:var(--ink);margin:0}
+  .meta{margin:0 0 6px;font-size:14.5px}
+  .meta .k{font-weight:700;color:var(--teal);text-transform:uppercase;font-size:11.5px;letter-spacing:.06em;margin-right:6px}
+  .meta .v{color:var(--ink)}
+  .egs{font-size:13.5px;color:var(--muted);margin:2px 0 0}
+
+  .promptwrap{position:relative;margin:14px 0 12px}
+  .promptwrap .plabel{font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+    color:var(--muted);margin-bottom:6px}
+  pre.prompt{margin:0;font-family:var(--mono);font-size:13px;line-height:1.5;color:#213652;
+    background:#F1F6FB;border:1px solid var(--line);border-radius:11px;padding:15px 16px;
+    white-space:pre-wrap;word-wrap:break-word;overflow-wrap:anywhere;max-height:320px;overflow:auto}
+  pre.prompt.lit{border-color:var(--sage);background:#EAF4FB}
+
+  .copybtn{margin-top:11px;width:100%;display:flex;align-items:center;justify-content:center;gap:9px;
+    font-family:var(--sans);font-size:15px;font-weight:700;color:#fff;background:var(--teal);
+    border:none;border-radius:11px;padding:13px 16px;cursor:pointer;transition:background .15s,transform .08s}
+  .copybtn:hover{background:#01285A}
+  .copybtn:active{transform:translateY(1px)}
+  .copybtn:focus-visible{outline:2px solid var(--teal-deep);outline-offset:2px}
+  .copybtn.copied{background:var(--ok)}
+  @media(min-width:681px){.copybtn{width:auto;min-width:240px;padding:12px 26px}}
+  .copybtn svg{flex:none}
+
+  .guard{margin-top:13px;display:flex;gap:10px;align-items:flex-start;
+    background:var(--amber-bg);border:1px solid var(--amber-line);border-radius:11px;padding:12px 14px}
+  .guard .gi{flex:none;margin-top:1px;color:var(--amber-ink)}
+  .guard .gt{font-size:13.5px;color:#5F4522}
+  .guard .gt b{color:var(--amber-ink)}
+  .guard.danger{background:var(--danger-bg);border-color:var(--danger-line)}
+  .guard.danger .gi{color:var(--danger-ink)}
+  .guard.danger .gt{color:#6B2B2B}
+  .guard.danger .gt b{color:var(--danger-ink)}
+
+  .noresults{display:none;text-align:center;color:var(--muted);padding:40px 0;font-size:15px}
+
+  /* ---------- verify ---------- */
+  .verify{margin-top:38px;background:var(--teal-soft);border:1px solid #CFE1F2;border-radius:16px;padding:24px}
+  .verify p.sub{margin:0 0 14px;color:#31514C;font-size:14.5px}
+  .citem{display:flex;gap:12px;align-items:flex-start;padding:9px 0;cursor:pointer;user-select:none}
+  .citem input{margin-top:3px;width:18px;height:18px;accent-color:var(--teal);flex:none;cursor:pointer}
+  .citem .ct{font-size:14.5px;color:var(--ink)}
+  .citem .ct b{font-weight:700}
+  .citem input:checked + .ct{color:var(--muted)}
+
+  /* ---------- footer ---------- */
+  footer{margin:34px 0 46px;padding-top:22px;border-top:1px solid var(--line);color:var(--muted);font-size:13.5px}
+  footer .scr{font-family:var(--serif);font-style:italic;color:var(--teal);font-size:15px}
+  .sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+
+  @media(prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto}
+    .card.flash{animation:none}
+    *{transition:none!important}
+  }
+  .savecheck{margin-top:13px;background:var(--teal-soft);border:1px solid #CFE1F2;border-radius:11px;padding:12px 14px}
+  .sc-title{font-size:11.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--teal-deep);margin-bottom:7px}
+  .sc-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px 18px}
+  @media(max-width:680px){.sc-grid{grid-template-columns:1fr}}
+  .sc-item{display:flex;gap:9px;align-items:flex-start;padding:3px 0;cursor:pointer;font-size:13px;color:#2A4368}
+  .sc-item input{margin-top:2px;width:15px;height:15px;accent-color:var(--teal);flex:none;cursor:pointer}
+  .sc-item span{line-height:1.4}
+  .sc-item input:checked + span{color:var(--muted);text-decoration:line-through}
+  .brandbar{background:#FFFFFF;border-bottom:1px solid var(--line)}
+  .brandbar .wrap{padding-top:15px;padding-bottom:15px}
+  .brandlogo{height:52px;width:auto;display:block}
+  pre.prompt::-webkit-scrollbar{width:9px;height:9px}
+  pre.prompt::-webkit-scrollbar-track{background:transparent}
+  pre.prompt::-webkit-scrollbar-thumb{background:#C4D6E8;border-radius:6px;border:2px solid #F1F6FB}
+  pre.prompt::-webkit-scrollbar-thumb:hover{background:var(--sage)}
+  pre.prompt{scrollbar-width:thin;scrollbar-color:#C4D6E8 transparent}
+  .totop{position:fixed;right:18px;bottom:18px;z-index:30;width:44px;height:44px;border-radius:50%;
+    background:var(--teal);color:#fff;border:none;cursor:pointer;display:none;align-items:center;justify-content:center;
+    box-shadow:0 4px 14px rgba(2,40,90,.25);transition:background .15s}
+  .totop:hover{background:var(--teal-deep)}
+  .totop:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+  .totop.show{display:flex}
+  @media print{
+    .brandbar{border-bottom:2px solid var(--teal)}
+    .hero{background:#fff;color:var(--ink);padding:10px 0}
+    .hero h1{color:var(--teal)} .hero .lede,.step .t,.reassure{color:var(--ink)}
+    .step{border:1px solid var(--line)}
+    .finder,.toolbar,.copybtn,.totop{display:none!important}
+    .card{break-inside:avoid;box-shadow:none}
+    pre.prompt{max-height:none;overflow:visible}
+    body{background:#fff}
+  }
+</style>
 </head>
 <body>
 
-<div class="dept-bar">
-  <div class="dept-bar-inner">
-    <span class="dept-brand">Second Chance CM</span>
-    <nav class="dept-links">
-      <a class="active">Care Coordinators</a>
-      <a href="intake.html">Intake</a>
-      <a href="alliant.html">Alliant</a>
-      <a href="medicaid.html">Medicaid</a>
-      <a href="ca.html">CA</a>
-    </nav>
-  </div>
-</div>
+<div class="brandbar"><div class="wrap"><img class="brandlogo" src="data:image/png;base64,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" alt="Second Chance Case Management"></div></div>
 
-<div class="header">
-  <div class="brand-wrap"><img class="brand-logo" src="logo.png" alt="Second Chance Case Management"><div>
-    <h1>Second Chance CM &middot; Care Coordinator Accountability</h1>
-    <p>CC Department &middot; Monthly CPR Tracking &amp; Hard-to-Reach Management</p>
-  </div></div>
-  <div class="header-right">
-    <span class="pill pill-date" id="datePill"></span>
-    <span class="pill pill-month" id="monthPill"></span>
-  </div>
-</div>
-
-<div class="formula-box">
-  &#128208; <strong>Weekly Target</strong> = ( Starting CPRs &minus; Completed &minus; Pending Docs ) &divide; weeks left in the month, rounded up &nbsp;&nbsp;
-  <span class="formula-eq">Visits Remaining &divide; Wks Left = CPRs/week needed to finish on time</span>
-</div>
-
-<div id="status">Loading live data from the Department Stats sheet&hellip;</div>
-
-<div id="dash" style="display:none">
-  <div class="cards" id="cards"></div>
-
-  <div class="tabs">
-    <div class="tab-btn active" onclick="switchTab('perf',this)">&#128202; Monthly Accountability</div>
-    <div class="tab-btn" onclick="switchTab('htr',this)">&#128680; Hard to Reach</div>
-  </div>
-
-  <div class="content-wrap">
-    <div class="tab-pane active" id="perf">
-      <div class="last-updated">Live from sheet &middot; loaded <span id="lastUpdated"></span> &middot; <span id="weekLabel"></span></div>
-      <div id="perfContent"></div>
+<header class="hero">
+  <div class="wrap">
+    <div class="eyebrow">CA &amp; CC Documentation Toolkit</div>
+    <h1>Situational Prompt Library</h1>
+    <p class="lede">Turn what happened on a call or visit into a clean, audit-ready note. Find your situation, copy the prompt, paste it into Otter. That's it.</p>
+    <div class="steps">
+      <div class="step"><div class="n">1</div><div class="t">Find your situation and open its <b>prompt</b> below.</div></div>
+      <div class="step"><div class="n">2</div><div class="t">Click <b>Copy prompt</b> &mdash; one tap, no highlighting.</div></div>
+      <div class="step"><div class="n">3</div><div class="t">Paste into the <b>Otter chat</b> on your call and press Enter.</div></div>
     </div>
-    <div class="tab-pane" id="htr">
-      <div class="htr-filters">
-        <span class="htr-fl">Filter:</span>
-        <button class="fbt active" onclick="filterHtr('all',this)">All</button>
-        <button class="fbt" onclick="filterHtr('critical',this)">&#128308; Critical (60+ days)</button>
-        <button class="fbt" onclick="filterHtr('no30',this)">&#128236; 30-Day Not Sent</button>
-        <button class="fbt" onclick="filterHtr('hold',this)">&#128683; On Hold</button>
+    <p class="reassure"><b>Never done this before? You can't break anything.</b> The prompt just asks the AI to write a note from your conversation. Always read what comes back against the call before you save it &mdash; there's a quick check at the end of every prompt.</p>
+  </div>
+</header>
+
+<section class="finder wrap" aria-label="Find your situation">
+  <h2>Which prompt do I need?</h2>
+  <p class="sub">Tap a situation to jump straight to it.</p>
+  <div class="finder-grid" id="finder"></div>
+</section>
+
+<div class="toolbar">
+  <div class="wrap">
+    <div class="row">
+      <div class="search">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <input id="search" type="search" placeholder="Search a situation&hellip; e.g. fall, provider, on hold" aria-label="Search prompts">
       </div>
-      <div id="htrContent"></div>
+      <div class="chips" id="chips" role="group" aria-label="Filter by category">
+        <button class="chip" data-cat="all" aria-pressed="true">All</button>
+        <button class="chip" data-cat="A" aria-pressed="false">Incidents &amp; Safety</button>
+        <button class="chip" data-cat="B" aria-pressed="false">Provider</button>
+        <button class="chip" data-cat="C" aria-pressed="false">Service Status</button>
+        <button class="chip" data-cat="D" aria-pressed="false">Documentation</button>
+      </div>
     </div>
   </div>
-  <div class="refresh-note">This page reads the Google Sheet live every time it loads. Reload to pull the latest numbers.</div>
 </div>
+
+<main class="wrap" id="main">
+
+<!-- ============ A ============ -->
+<section class="cat" data-cat="A">
+  <div class="cat-head"><span class="cat-letter">A</span><h3>Incidents &amp; Safety</h3></div>
+
+  <article class="card" id="p1" data-cat="A" data-keywords="fall er hospital hospitalization injury unsafe incident medication error wandering elopement death critical adverse">
+    <div class="card-head"><div class="num">1</div><h2 class="card-title">Critical / Adverse Incident</h2></div>
+    <p class="meta"><span class="k">When</span><span class="v">A fall, injury, ER visit, hospitalization, medication error, unsafe home condition, wandering, or death comes up on the call.</span></p>
+    <p class="meta"><span class="k">You get</span><span class="v">A structured incident note with a reportability flag.</span></p>
+    <div class="promptwrap">
+      <div class="plabel">Prompt</div>
+<pre class="prompt">TASK: The transcript contains a possible critical or adverse incident. Produce an incident note using exactly these labels, each written as complete sentences in paragraph form:
+
+Incident Type: What kind of event, as described.
+Date and Time of Incident: As stated, or "Not stated during call."
+Location: Where it happened, as stated.
+What Happened: A factual, chronological account using only stated facts.
+Contributing Factors: Only if explicitly stated; otherwise "Not stated".
+Injury or Harm: Nature and severity as stated, or that none was reported.
+Immediate Action Taken: What was done and by whom, as stated.
+Current Status of Member: How the member is now, as stated.
+Notifications Already Made: Who was told (911, family, provider, physician), as stated, or that none were reported.
+Reportability: State exactly - "This event may meet Critical Incident reporting criteria. Route to a supervisor and file per SCCM's Critical Incident policy within the required timeframe."
+Action Items: A bulleted list of clear next steps, including any HealtheFirst or GA Horizons updates.
+
+If the transcript suggests possible abuse, neglect, or exploitation, do not analyze or conclude - add: "Possible APS concern - escalate immediately per SCCM APS and mandated-reporting policy."</pre>
+      <button class="copybtn" type="button"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"></rect><path d="M5 15V5a2 2 0 0 1 2-2h10"></path></svg><span class="label">Copy prompt</span></button>
+    </div>
+    <div class="guard warn"><span class="gi"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"></path><path d="M12 17h.01"></path><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"></path></svg></span><span class="gt"><b>Guardrail.</b> This writes the note &mdash; it does not file the report. You still route and time it per SCCM's Critical Incident SOP. Never let the AI decide reportability; the flag is a cue to escalate.</span></div>
+      <div class="savecheck">
+      <div class="sc-title">Before you save or send</div>
+      <div class="sc-grid">
+      <label class="sc-item"><input type="checkbox"><span>Nothing added that wasn't said &mdash; if it's not in the conversation, cut it.</span></label>
+      <label class="sc-item"><input type="checkbox"><span>Names, dates, phone numbers, and addresses all exactly right.</span></label>
+      <label class="sc-item"><input type="checkbox"><span>"Not stated" used honestly, and every MISSING flag cleared.</span></label>
+      <label class="sc-item"><input type="checkbox"><span>Leaving SCCM (email)? Minimum-necessary detail, secure account, kind tone.</span></label>
+      <label class="sc-item"><input type="checkbox"><span>Incident or APS concern? Escalate to your supervisor, not just save.</span></label>
+      <label class="sc-item"><input type="checkbox"><span>Reads clinical, factual, and defensible.</span></label>
+      </div>
+    </div>
+  </article>
+
+  <article class="card" id="p2" data-cat="A" data-keywords="abuse neglect exploitation aps adult protective services mistreatment financial safety">
+    <div class="card-head"><div class="num">2</div><h2 class="card-title">APS Escalation Flag</h2></div>
+    <p class="meta"><span class="k">When</span><span class="v">The member or caregiver reports or hints at mistreatment &mdash; by an aide, agency, family member, or anyone &mdash; or financial exploitation or neglect.</span></p>
+    <p class="meta"><span class="k">You get</span><span class="v">A neutral, factual record to support immediate escalation to your supervisor.</span></p>
+    <div class="promptwrap">
+      <div class="plabel">Prompt</div>
+<pre class="prompt">TASK: The transcript may contain a report of abuse, neglect, or exploitation. Document it factually and neutrally using these labels:
+
+Reported Concern: What was said. Quote the member's or caregiver's exact words where possible; do not paraphrase the specifics away.
+Who Was Involved (as stated): The person(s) named or described; write "unidentified" if not named.
+When and Where (as stated): Timeframe and location, or "Not stated".
+Member's Current Safety (as stated): Only what was said about the member's immediate safety.
+Escalation Required: State exactly - "This report may be an APS (Adult Protective Services)-reportable situation. Escalate to a supervisor immediately and follow SCCM's APS and mandated-reporting policy. Do not investigate independently."
+
+Do NOT use conclusion words like "abuse," "neglect," or "exploitation" as findings - write "the member reported..." or "the caregiver stated...". Do not interpret, minimize, explain away, or add reassurance or opinion.</pre>
+      <button class="copybtn" type="button"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"></rect><path d="M5 15V5a2 2 0 0 1 2-2h10"></path></svg><span class="label">Copy prompt</span></button>
+    </div>
+    <div class="guard danger"><span class="gi"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"></path><path d="M12 17h.01"></path><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"></path></svg></span><span class="gt"><b>Highest sensitivity.</b> This supports escalation &mdash; it doesn't replace it. If a member is in immediate danger, that's a phone call, not a prompt. Tell your supervisor the moment you see it.</span></div>
+      <div class="savecheck">
+      <div class="sc-title">Before you save or send</div>
+      <div class="sc-grid">
+      <label class="sc-item"><input type="checkbox"><span>Nothing added that wasn't said &mdash; if it's not in the conversation, cut it.</span></label>
+      <label class="sc-item"><input type="checkbox"><span>Names, dates, phone numbers, and addresses all exactly right.</span></label>
+      <label class="sc-item"><input type="checkbox"><span>"Not stated" used honestly, and every MISSING flag cleared.</span></label>
+      <label class="sc-item"><input type="checkbox"><span>Leaving SCCM (email)? Minimum-necessary detail, secure account, kind tone.</span></label>
+      <label class="sc-item"><input type="checkbox"><span>Incident or APS concern? Escalate to your supervisor, not just save.</span></label>
+      <label class="sc-item"><input type="checkbox"><span>Reads clinical, factual, and defensible.</span></label>
+      </div>
+    </div>
+  </article>
+</section>
+
+<!-- ============ B ============ -->
+<section class="cat" data-cat="B">
+  <div class="cat-head"><span class="cat-letter">B</span><h3>Provider &amp; Agency Communication</h3></div>
+
+  <article class="card" id="p3" data-cat="B" data-keywords="provider email agency ask question clarify records partnership contact">
+    <div class="card-head"><div class="num">3</div><h2 class="card-title">Email to the Provider Agency</h2></div>
+    <p class="meta"><span class="k">When</span><span class="v">A member shared an account you'd like the provider's perspective on, or you need to check something. What a member reports and what the provider's records show don't always match &mdash; we ask, we don't assume.</span></p>
+    <p class="meta"><span class="k">You get</span><span class="v">A kind, sincere, questions-led email to your provider partner.</span></p>
+    <div class="promptwrap">
+      <div class="plabel">Prompt</div>
+<pre class="prompt">TASK: Draft a kind, sincere email from SCCM to the member's provider agency to better understand a situation raised in the transcript. We are in partnership with our providers, so the email must be warm, respectful, and lead with questions - never accusations or assumptions.
+
+Important context: members sometimes share an account that turns out to be incomplete or inaccurate, and the provider may have documentation showing something different. The goal of this email is to invite the provider to shine light on the situation and share what they are seeing on their end.
+
+Rules for the email:
+- Open warmly and acknowledge the partnership.
+- Describe what prompted the outreach factually and gently, using only what was said, and make clear we may not have the full picture.
+- Lead with genuine questions: ask what the provider knows, whether they can help clarify, and what their records show.
+- Minimum-necessary detail: refer to the member by first name and last initial or member ID - not full name, DOB, address, or diagnosis unless a specific detail is essential.
+- Do NOT include a deadline or a requested response time.
+- Keep the tone sincere, collaborative, and appreciative throughout.
+
+Output exactly:
+Subject: [warm, neutral subject line]
+Body: [3-5 short paragraphs; leave the sender's name blank to fill in.]</pre>
+      <button class="copybtn" type="button"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"></rect><path d="M5 15V5a2 2 0 0 1 2-2h10"></path></svg><span class="label">Copy prompt</span></button>
+    </div>
+    <div class="guard warn"><span class="gi"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"></path><path d="M12 17h.01"></path><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"></path></svg></span><span class="gt"><b>Guardrail.</b> We lead with questions, not conclusions. Read it once for tone and send only from your SCCM email. If it points to abuse, neglect, or exploitation, don't email &mdash; use the APS prompt instead.</span></div>
+      <div class="savecheck">
+      <div class="sc-title">Before you save or send</div>
+      <div class="sc-grid">
+      <label class="sc-item"><input type="checkbox"><span>Nothing added that wasn't said &mdash; if it's not in the conversation, cut it.</span></label>
+      <label class="sc-item"><input type="checkbox"><span>Names, dates, phone numbers, and addresses all exactly right.</span></label>
+      <label class="sc-item"><input type="checkbox"><span>"Not stated" used honestly, and every MISSING flag cleared.</span></label>
+      <label class="sc-item"><input type="checkbox"><span>Leaving SCCM (email)? Minimum-necessary detail, secure account, kind tone.</span></label>
+      <label class="sc-item"><input type="checkbox"><span>Incident or APS concern? Escalate to your supervisor, not just save.</span></label>
+      <label class="sc-item"><input type="checkbox"><span>Reads clinical, factual, and defensible.</span></label>
+      </div>
+    </div>
+  </article>
+
+  <article class="card" id="p4" data-cat="B" data-keywords="complaint concern provider ga horizons log unhappy">
+    <div class="card-head"><div class="num">4</div><h2 class="card-title">Provider Complaint / Concern</h2></div>
+    <p class="meta"><span class="k">When</span><span class="v">A complaint or concern about the provider that should be logged.</span></p>
+    <p class="meta"><span class="k">You get</span><span class="v">A complaint/concern record for GA Horizons, with provider outreach as the next step.</span></p>
+    <div class="promptwrap">
+      <div class="plabel">Prompt</div>
+<pre class="prompt">TASK: The transcript contains a complaint or concern about the provider agency. This will be documented as a complaint/concern in GA Horizons. Document it using these labels, in paragraph form:
+
+Nature of Complaint/Concern: What the member is unhappy about, factually.
+Frequency / Pattern: How often, as stated, or "Not stated during call."
+Impact on Member: The stated effect on the member's care or wellbeing.
+Prior Resolution Attempts: Any steps already taken, as stated.
+Member's Expectation: What the member wants to happen, as stated.
+Action Items:
+- Document this complaint/concern in GA Horizons.
+- Reach out to the provider agency to make them aware of the concern, using a kind, questions-led approach (see the provider email prompt).
+- Any other clear, owner-ready next steps stated in the call.</pre>
+      <button class="copybtn" type="button"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"></rect><path d="M5 15V5a2 2 0 0 1 2-2h10"></path></svg><span class="label">Copy prompt</span></button>
+    </div>
+    <div class="guard warn"><span class="gi"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"></path><path d="M12 17h.01"></path><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"></path></svg></span><span class="gt"><b>Guardrail.</b> This becomes part of the GA Horizons record. Outreach is always kind and questions-led: we make them aware, we don't accuse.</span></div>
+      <div class="savecheck">
+      <div class="sc-title">Before you save or send</div>
+      <div class="sc-grid">
+      <label class="sc-item"><input type="checkbox"><span>Nothing added that wasn't said &mdash; if it's not in the conversation, cut it.</span></label>
+      <label class="sc-item"><input type="checkbox"><span>Names, dates, phone numbers, and addresses all exactly right.</span></label>
+      <label class="sc-item"><input type="checkbox"><span>"Not stated" used honestly, and every MISSING flag cleared.</span></label>
+      <label class="sc-item"><input type="checkbox"><span>Leaving SCCM (email)? Minimum-necessary detail, secure account, kind tone.</span></label>
+      <label class="sc-item"><input type="checkbox"><span>Incident or APS concern? Escalate to your supervisor, not just save.</span></label>
+      <label class="sc-item"><input type="checkbox"><span>Reads clinical, factual, and defensible.</span></label>
+      </div>
+    </div>
+  </article>
+
+  <article class="card" id="p5" data-cat="B" data-keywords="rebroker re-broker switch change agency provider new transfer unhappy dissatisfied healthefirst">
+    <div class="card-head"><div class="num">5</div><h2 class="card-title">Re-Broker (Change of Provider Agency)</h2></div>
+    <p class="meta"><span class="k">When</span><span class="v">The member is unhappy with their current provider agency and wants to switch to a new agency for services.</span></p>
+    <p class="meta"><span class="k">You get</span><span class="v">A detailed GA Horizons re-broker note with the required "why," plus the HealtheFirst and provider-search action items.</span></p>
+    <div class="promptwrap">
+      <div class="plabel">Prompt</div>
+<pre class="prompt">TASK: The member is unhappy with their current provider agency and wants to switch to a new agency (a re-broker). Document it using these labels, in paragraph form:
+
+Reason for Re-Broker: A detailed, specific explanation of why the member wants to change agencies, using only stated facts - what has happened, how often, the impact on the member, and any attempts already made to resolve it with the current provider. This section is required and must be thorough; do not summarize it into a single vague sentence.
+Member's Expectation: What the member wants from a new agency, as stated.
+New Provider Preference (as stated): Any agency the member named, or stated preferences (location, language, scheduling, services), or "Not stated during call."
+Current Provider (as stated): The agency the member is leaving, or "Not stated during call."
+Action Items:
+- CA/CC: assist the member in identifying a new provider agency.
+- Place a Re-Broker service in HealtheFirst.
+- BOTH the Communications Analyst and the Care Coordinator: document this re-broker, including the detailed reason above, in GA Horizons.
+- Any other clear, owner-ready next steps stated in the call.</pre>
+      <button class="copybtn" type="button"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"></rect><path d="M5 15V5a2 2 0 0 1 2-2h10"></path></svg><span class="label">Copy prompt</span></button>
+    </div>
+    <div class="guard warn"><span class="gi"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"></path><path d="M12 17h.01"></path><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"></path></svg></span><span class="gt"><b>Guardrail.</b> The detailed "why" is not optional &mdash; a re-broker without a documented reason won't hold up in GA Horizons. And if the dissatisfaction involves possible abuse, neglect, or exploitation, route it through the APS prompt first &mdash; that's an escalation, not a provider switch.</span></div>
+    <div class="savecheck">
+      <div class="sc-title">Before you save or send</div>
+      <div class="sc-grid">
+      <label class="sc-item"><input type="checkbox"><span>Nothing added that wasn't said &mdash; if it's not in the conversation, cut it.</span></label>
+      <label class="sc-item"><input type="checkbox"><span>Names, dates, phone numbers, and addresses all exactly right.</span></label>
+      <label class="sc-item"><input type="checkbox"><span>"Not stated" used honestly, and every MISSING flag cleared.</span></label>
+      <label class="sc-item"><input type="checkbox"><span>Leaving SCCM (email)? Minimum-necessary detail, secure account, kind tone.</span></label>
+      <label class="sc-item"><input type="checkbox"><span>Incident or APS concern? Escalate to your supervisor, not just save.</span></label>
+      <label class="sc-item"><input type="checkbox"><span>Reads clinical, factual, and defensible.</span></label>
+      </div>
+    </div>
+  </article>
+
+</section>
+
+<!-- ============ C ============ -->
+<section class="cat" data-cat="C">
+  <div class="cat-head"><span class="cat-letter">C</span><h3>Service Authorization &amp; Status</h3></div>
+
+  <article class="card" id="p6" data-cat="C" data-keywords="hold suspend suspension pause hospitalization travel snf rehab safety missing return date">
+    <div class="card-head"><div class="num">6</div><h2 class="card-title">Services On Hold / Suspension</h2></div>
+    <p class="meta"><span class="k">When</span><span class="v">Services are pausing &mdash; hospitalization, rehab/SNF placement, member request, travel, or a safety concern.</span></p>
+    <p class="meta"><span class="k">You get</span><span class="v">A detailed GA Horizons note and a one-sentence EDWP provider notice, plus alerts for any missing detail.</span></p>
+    <div class="promptwrap">
+      <div class="plabel">Prompt</div>
+<pre class="prompt">TASK: Services are being placed on hold or suspended based on the transcript. Produce TWO separate parts, plus a missing-information check.
+
+First, identify the reason for the hold. Then check the Required Details for that reason below; for ANY required detail NOT stated in the conversation, do not guess - raise a clearly marked alert telling the CA/CC to obtain and add it.
+
+Required details by reason:
+- Hospitalization: hospital/facility name, admission date, expected discharge date, reason for admission.
+- Rehab or SNF placement: facility name, admission date, expected return or discharge date.
+- Member request: reason for the request, effective date of the hold, expected resume date.
+- Travel: where the member is traveling, departure date, and expected return date (and a contact address while away, if services could resume there).
+- Safety concern: nature of the concern, who identified it, effective date, and the plan or next step to resolve it.
+
+Output exactly:
+
+PART 1 - GA HORIZONS NOTE (detailed)
+Reason for Hold: [one line]
+Detailed Explanation: [a thorough, audit-defensible explanation of the reason for the hold and its circumstances, using only stated facts.]
+
+** MISSING - ADD BEFORE FINALIZING **
+[Bulleted list of each required detail not found in the conversation, written as an instruction - e.g., "Return date not stated: confirm with the member and add." If nothing is missing, write "All required details captured."]
+
+PART 2 - EDWP PROVIDER NOTICE (one sentence only)
+[Exactly ONE sentence to send to the provider, notifying them the member's services are being placed on hold. State the member (first name and last initial or member ID), the effective date if known, and the reason, plainly and professionally. No more than one sentence.]
+
+Action Items: [bulleted - document Part 1 in GA Horizons, send Part 2 to the provider as the EDWP hold notice, update HealtheFirst, and obtain any flagged missing details.]</pre>
+      <button class="copybtn" type="button"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"></rect><path d="M5 15V5a2 2 0 0 1 2-2h10"></path></svg><span class="label">Copy prompt</span></button>
+    </div>
+    <div class="guard warn"><span class="gi"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"></path><path d="M12 17h.01"></path><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"></path></svg></span><span class="gt"><b>Guardrail.</b> Part 1 goes in GA Horizons; Part 2 is the one-sentence EDWP notice to the provider. Don't finalize until every <b>MISSING</b> flag is cleared.</span></div>
+      <div class="savecheck">
+      <div class="sc-title">Before you save or send</div>
+      <div class="sc-grid">
+      <label class="sc-item"><input type="checkbox"><span>Nothing added that wasn't said &mdash; if it's not in the conversation, cut it.</span></label>
+      <label class="sc-item"><input type="checkbox"><span>Names, dates, phone numbers, and addresses all exactly right.</span></label>
+      <label class="sc-item"><input type="checkbox"><span>"Not stated" used honestly, and every MISSING flag cleared.</span></label>
+      <label class="sc-item"><input type="checkbox"><span>Leaving SCCM (email)? Minimum-necessary detail, secure account, kind tone.</span></label>
+      <label class="sc-item"><input type="checkbox"><span>Incident or APS concern? Escalate to your supervisor, not just save.</span></label>
+      <label class="sc-item"><input type="checkbox"><span>Reads clinical, factual, and defensible.</span></label>
+      </div>
+    </div>
+  </article>
+
+  <article class="card" id="p7" data-cat="C" data-keywords="frequency change increase decrease more fewer hours visits request supervisor">
+    <div class="card-head"><div class="num">7</div><h2 class="card-title">Change in Frequency Request</h2></div>
+    <p class="meta"><span class="k">When</span><span class="v">The call suggests the member may need more or fewer visits or hours.</span></p>
+    <p class="meta"><span class="k">You get</span><span class="v">A frequency-change request in the "Xhrs x Ydays wkly" format, for supervisor review.</span></p>
+    <div class="promptwrap">
+      <div class="plabel">Prompt</div>
+<pre class="prompt">TASK: The transcript indicates a possible need to change the frequency of the member's services (more or fewer hours or days). Write a request suitable for supervisor review, capturing exactly how many hours are being requested. Tie it to the specific stated facts - functional changes, safety or fall risk, caregiver availability, or member goals - using only what was said. End by stating the request requires supervisor review.
+
+Output exactly:
+Requested Frequency: [state it in the format "Xhrs x Ydays wkly" - for example, "7hrs x 5days wkly". This is hours per day by days per week, NOT a total weekly hours figure. If the hours per day or the days per week was not stated, write "Not stated - confirm with member" for that piece.]
+Current Frequency (if stated): [same "Xhrs x Ydays wkly" format, or "Not stated during call".]
+Requested Change: [one sentence - e.g., "Increase from 5hrs x 5days wkly to 7hrs x 5days wkly."]
+Reason for Request: [3-5 sentences tied to stated facts.]
+Action Items: [route to supervisor for review; any HealtheFirst or GA Horizons steps.]</pre>
+      <button class="copybtn" type="button"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"></rect><path d="M5 15V5a2 2 0 0 1 2-2h10"></path></svg><span class="label">Copy prompt</span></button>
+    </div>
+    <div class="guard warn"><span class="gi"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"></path><path d="M12 17h.01"></path><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"></path></svg></span><span class="gt"><b>Guardrail.</b> Express hours as hours-per-day by days-per-week (e.g., 7hrs x 5days wkly), never a weekly total. This is a request, not an approval &mdash; a supervisor reviews it before anything changes.</span></div>
+      <div class="savecheck">
+      <div class="sc-title">Before you save or send</div>
+      <div class="sc-grid">
+      <label class="sc-item"><input type="checkbox"><span>Nothing added that wasn't said &mdash; if it's not in the conversation, cut it.</span></label>
+      <label class="sc-item"><input type="checkbox"><span>Names, dates, phone numbers, and addresses all exactly right.</span></label>
+      <label class="sc-item"><input type="checkbox"><span>"Not stated" used honestly, and every MISSING flag cleared.</span></label>
+      <label class="sc-item"><input type="checkbox"><span>Leaving SCCM (email)? Minimum-necessary detail, secure account, kind tone.</span></label>
+      <label class="sc-item"><input type="checkbox"><span>Incident or APS concern? Escalate to your supervisor, not just save.</span></label>
+      <label class="sc-item"><input type="checkbox"><span>Reads clinical, factual, and defensible.</span></label>
+      </div>
+    </div>
+  </article>
+</section>
+
+<!-- ============ D ============ -->
+<section class="cat" data-cat="D">
+  <div class="cat-head"><span class="cat-letter">D</span><h3>Documentation &amp; Handoff</h3></div>
+
+  <article class="card" id="p8" data-cat="D" data-keywords="deep dive detail topic narrative depth expand complaint health change conflicting sensitive">
+    <div class="card-head"><div class="num">8</div><h2 class="card-title">Deeper-Dive Topic Note</h2></div>
+    <p class="meta"><span class="k">When</span><span class="v">One topic needs more depth than the auto-note gave.</span></p>
+    <p class="egs">For an escalating complaint, a significant health change, a confusing or conflicting account, a sensitive family/caregiver situation, or anything a reviewer needs more depth on.</p>
+    <p class="meta" style="margin-top:8px"><span class="k">You get</span><span class="v">An expanded, single-topic narrative pulled straight from the conversation.</span></p>
+    <div class="promptwrap">
+      <div class="plabel">Prompt</div>
+<pre class="prompt">TASK: A single topic from the call needs more depth than the standard summary captured. The topic is:
+[INSERT TOPIC - e.g., "the member's recurring falls in the bathroom" or "the ongoing dispute with the aide"]
+
+Write an expanded narrative of 6-10 complete sentences, in third-person clinical language, covering only that topic. Pull every stated detail, put events in chronological order, include short exact member quotes where clearly stated, and note the implications for the member's care or safety as reflected in the conversation. Use "Not stated during call" for any gap a reader would expect filled.</pre>
+      <button class="copybtn" type="button"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"></rect><path d="M5 15V5a2 2 0 0 1 2-2h10"></path></svg><span class="label">Copy prompt</span></button>
+    </div>
+    <div class="guard warn"><span class="gi"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"></path><path d="M12 17h.01"></path><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"></path></svg></span><span class="gt"><b>Guardrail.</b> Replace <b>[INSERT TOPIC]</b> every time &mdash; a vague topic gets a vague note.</span></div>
+      <div class="savecheck">
+      <div class="sc-title">Before you save or send</div>
+      <div class="sc-grid">
+      <label class="sc-item"><input type="checkbox"><span>Nothing added that wasn't said &mdash; if it's not in the conversation, cut it.</span></label>
+      <label class="sc-item"><input type="checkbox"><span>Names, dates, phone numbers, and addresses all exactly right.</span></label>
+      <label class="sc-item"><input type="checkbox"><span>"Not stated" used honestly, and every MISSING flag cleared.</span></label>
+      <label class="sc-item"><input type="checkbox"><span>Leaving SCCM (email)? Minimum-necessary detail, secure account, kind tone.</span></label>
+      <label class="sc-item"><input type="checkbox"><span>Incident or APS concern? Escalate to your supervisor, not just save.</span></label>
+      <label class="sc-item"><input type="checkbox"><span>Reads clinical, factual, and defensible.</span></label>
+      </div>
+    </div>
+  </article>
+
+  <article class="card" id="p9" data-cat="D" data-keywords="action items todo tasks list owner fast quick">
+    <div class="card-head"><div class="num">9</div><h2 class="card-title">Action-Items-Only Extract</h2></div>
+    <p class="meta"><span class="k">When</span><span class="v">You just need the to-do list, fast &mdash; no full write-up.</span></p>
+    <p class="meta"><span class="k">You get</span><span class="v">A clean, owner-ready task list.</span></p>
+    <div class="promptwrap">
+      <div class="plabel">Prompt</div>
+<pre class="prompt">TASK: Extract only the action items from the transcript - nothing else. Return a bulleted list. For each item, state the action, the owner (Communications Analyst, Care Coordinator, provider agency, or member), and the due date or timeframe if stated. Where a change requires a system update, name the system (HealtheFirst or GA Horizons). If none are present, write "No action items identified during call."</pre>
+      <button class="copybtn" type="button"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"></rect><path d="M5 15V5a2 2 0 0 1 2-2h10"></path></svg><span class="label">Copy prompt</span></button>
+    </div>
+      <div class="savecheck">
+      <div class="sc-title">Before you save or send</div>
+      <div class="sc-grid">
+      <label class="sc-item"><input type="checkbox"><span>Nothing added that wasn't said &mdash; if it's not in the conversation, cut it.</span></label>
+      <label class="sc-item"><input type="checkbox"><span>Names, dates, phone numbers, and addresses all exactly right.</span></label>
+      <label class="sc-item"><input type="checkbox"><span>"Not stated" used honestly, and every MISSING flag cleared.</span></label>
+      <label class="sc-item"><input type="checkbox"><span>Leaving SCCM (email)? Minimum-necessary detail, secure account, kind tone.</span></label>
+      <label class="sc-item"><input type="checkbox"><span>Incident or APS concern? Escalate to your supervisor, not just save.</span></label>
+      <label class="sc-item"><input type="checkbox"><span>Reads clinical, factual, and defensible.</span></label>
+      </div>
+    </div>
+  </article>
+
+  <article class="card" id="p10" data-cat="D" data-keywords="supervisor handoff escalate scope beyond ask">
+    <div class="card-head"><div class="num">10</div><h2 class="card-title">Supervisor Handoff Note</h2></div>
+    <p class="meta"><span class="k">When</span><span class="v">Something needs your supervisor's attention beyond your scope. Used by both CAs and CCs.</span></p>
+    <p class="meta"><span class="k">You get</span><span class="v">A concise handoff to your supervisor with a clear ask.</span></p>
+    <div class="promptwrap">
+      <div class="plabel">Prompt</div>
+<pre class="prompt">TASK: Something in the call needs your supervisor's attention beyond your scope. Write a concise handoff in third-person clinical language using these labels:
+
+What Happened: The situation, factually.
+Why It Needs the Supervisor: The reason it's beyond your scope.
+The Ask: Exactly what you need your supervisor to do.</pre>
+      <button class="copybtn" type="button"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"></rect><path d="M5 15V5a2 2 0 0 1 2-2h10"></path></svg><span class="label">Copy prompt</span></button>
+    </div>
+    <div class="guard warn"><span class="gi"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"></path><path d="M12 17h.01"></path><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"></path></svg></span><span class="gt"><b>Guardrail.</b> Be specific about the ask &mdash; a handoff without a clear request just moves confusion downstream.</span></div>
+      <div class="savecheck">
+      <div class="sc-title">Before you save or send</div>
+      <div class="sc-grid">
+      <label class="sc-item"><input type="checkbox"><span>Nothing added that wasn't said &mdash; if it's not in the conversation, cut it.</span></label>
+      <label class="sc-item"><input type="checkbox"><span>Names, dates, phone numbers, and addresses all exactly right.</span></label>
+      <label class="sc-item"><input type="checkbox"><span>"Not stated" used honestly, and every MISSING flag cleared.</span></label>
+      <label class="sc-item"><input type="checkbox"><span>Leaving SCCM (email)? Minimum-necessary detail, secure account, kind tone.</span></label>
+      <label class="sc-item"><input type="checkbox"><span>Incident or APS concern? Escalate to your supervisor, not just save.</span></label>
+      <label class="sc-item"><input type="checkbox"><span>Reads clinical, factual, and defensible.</span></label>
+      </div>
+    </div>
+  </article>
+</section>
+
+<p class="noresults" id="noresults">No prompt matches that. Try another word, or clear the search to see all ten.</p>
+
+
+<footer>
+  <p>Every prompt here rests on one rule: document only what was actually said. That's not just compliance &mdash; it's integrity. Our notes speak for members who can't always speak for themselves, and they have to be true.</p>
+  <p><span class="scr">"Whoever is faithful in a very little is also faithful in much."</span> &mdash; Luke 16:10. &nbsp;Get the small things right, and the whole record can be trusted.</p>
+</footer>
+
+</main>
+
+<button class="totop" id="totop" type="button" aria-label="Back to top"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"></path><path d="m5 12 7-7 7 7"></path></svg></button>
+<div class="sr" role="status" aria-live="polite" id="live"></div>
 
 <script>
-// ============================================================
-//  LIVE DATA SOURCE
-//  Reads the "Department Stats" Google Sheet directly via the
-//  public CSV endpoint (sheet is shared "anyone with link can view").
-//  No data is stored in this file — it refreshes on every load.
-// ============================================================
-const SHEET_ID = '1HXYz9v9gU2HZ5wjaC5YKPxt1p9ReAPd3CyeuVvCA4hk';
-const TAB_CC   = "CC Department '26";
-const TAB_HTR  = "CC- Hard to Reach";
-// Load a tab via the gviz JSONP endpoint (script-tag injection). This is not
-// subject to CORS, so the page works when opened from disk, in a preview pane,
-// or on any web host.
-let _cbN = 0;
-function loadTab(tab){
-  return new Promise(function(resolve, reject){
-    const cb = '__gviz_cb_' + (_cbN++);
-    const s = document.createElement('script');
-    const timer = setTimeout(function(){ cleanup(); reject(new Error('timed out reaching the sheet')); }, 20000);
-    function cleanup(){ clearTimeout(timer); delete window[cb]; if(s.parentNode) s.parentNode.removeChild(s); }
-    window[cb] = function(resp){
-      cleanup();
-      try{
-        if(!resp || !resp.table) throw new Error('unexpected response');
-        resolve(tableToRows(resp.table));
-      }catch(e){ reject(e); }
-    };
-    s.onerror = function(){ cleanup(); reject(new Error('could not reach the sheet')); };
-    s.src = 'https://docs.google.com/spreadsheets/d/'+SHEET_ID+'/gviz/tq?sheet='+
-            encodeURIComponent(tab)+'&tqx=reqId:0;responseHandler:'+cb+';out:json&t='+Date.now();
-    document.head.appendChild(s);
+(function(){
+  "use strict";
+  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var live = document.getElementById("live");
+
+  /* ---- build the finder from the cards ---- */
+  var finder = document.getElementById("finder");
+  var cards = Array.prototype.slice.call(document.querySelectorAll(".card"));
+  cards.forEach(function(card){
+    var num = card.querySelector(".num").textContent.trim();
+    var title = card.querySelector(".card-title").textContent.trim();
+    var when = card.querySelector(".meta .v").textContent.trim();
+    // shorten the "when" to its first clause for the finder
+    var brief = when.split(" - ")[0].split(". ")[0];
+    var b = document.createElement("button");
+    b.className = "frow";
+    b.type = "button";
+    b.setAttribute("data-target", card.id);
+    b.innerHTML = '<span class="pill">'+num+'</span><span class="sit"><b>'+title+'</b> &nbsp;'+brief+'</span>';
+    b.addEventListener("click", function(){ jumpTo(card); });
+    finder.appendChild(b);
   });
-}
-function cellStr(c){ if(!c) return ''; return (c.f!=null ? c.f : (c.v==null ? '' : c.v)); }
-// Rebuild the row layout the parsers expect: header row (from column labels)
-// followed by the data rows. This mirrors the gviz CSV output exactly.
-function tableToRows(table){
-  const labels = table.cols.map(c => c.label || '');
-  const data   = table.rows.map(r => (r.c||[]).map(cellStr));
-  return [labels].concat(data);
-}
 
-// Supervisors in display order. Shuronda currently has no CCs (Alexa is on
-// Zukrat's team, where the sheet lists her), so no Shuronda block renders.
-const SUPS = ['Courtney','Jennifer','Zukrat','Jarrett','Shuronda'];
-const SUP_COLORS = {
-  Courtney:'#1e6fa8', Jennifer:'#6d28d9',
-  Zukrat:'#0d6e6e',   Jarrett:'#b45309', Shuronda:'#be185d'
-};
-// Short sheet names -> full display names.
-const FULL_NAME = {
-  'April':'April Foster','Maya':'Maya Stallworth','Jessica':'Jessica Byrd',
-  'Otisia':'Otisia Johnson','Angela':'Angela Wills','Jayson':'Jayson Louizos',
-  'Rashad':'Rashad Daniels','Bridney':'Bridney Jefferson','Marsha':'Marsha',
-  'Suresh':'Suresh','Jon':'Jon','Andrea':'Andrea Pless',
-  'Ashley W.':'Ashley Williams','Ashley':'Ashley Williams','Vivian':'Vivian Stith',
-  'Kristin':'Kristin Whitmore','Greg':'Greg Battle','Sanjay':'Sanjay Mukhia',
-  'Shaquanna':'Shaquanna Hollis','Lal':'Lal Rai','Karisan':'Karisan Johnson',
-  'Tarell':'Tarell','Lauryn':'Lauryn Sanford','Alexa':'Alexa'
-};
-
-// ── DATE / WEEK CONTEXT (auto-detected at open time) ───────
-const NOW = new Date();
-const DATA_DATE = NOW.getFullYear()+'-'+String(NOW.getMonth()+1).padStart(2,'0')+'-'+String(NOW.getDate()).padStart(2,'0');
-const MONTH_WEEKS = 4;
-const WEEK_N = Math.min(5, Math.max(1, Math.ceil((NOW.getDate() + new Date(NOW.getFullYear(), NOW.getMonth(), 1).getDay())/7))); // calendar week-of-month (counts Sun–Sat rows like the sheet; e.g. July 7 2026 = week 2)
-const WEEKS_LEFT = Math.max(0.5, (new Date(NOW.getFullYear(), NOW.getMonth()+1, 0).getDate() - NOW.getDate()) / 7); // actual weeks remaining in the month (days left ÷ 7)
-// Weekly-target basis (Haddon 2026-06-29): divide Visits Remaining by the month's "productive weeks"
-// = (calendar weeks the month spans − 1). A 4-week month → 3; a 5-week month → 4 (e.g. July 2026 spans 5 → 4).
-const _firstDOW = new Date(NOW.getFullYear(), NOW.getMonth(), 1).getDay();
-const _daysInMonth = new Date(NOW.getFullYear(), NOW.getMonth()+1, 0).getDate();
-const WEEKS_IN_MONTH = Math.ceil((_firstDOW + _daysInMonth) / 7);
-// Divide by the FULL weeks the month spans (July 2026 = 5), using the weeks LEFT so it counts down
-// each calendar week: July wk1÷5, wk2÷4, wk3÷3, wk4÷2, wk5÷1 — i.e. the weeks remaining in the month.
-const WORK_WEEKS = WEEKS_IN_MONTH;
-const WORK_WEEKS_LEFT = Math.max(1, WORK_WEEKS - (WEEK_N - 1));
-let DATA_MONTH = NOW.toLocaleDateString('en-US',{month:'long',year:'numeric'});
-
-const TODAY = new Date(DATA_DATE);
-
-// These are filled in after the sheet is parsed.
-let CC_DATA = [];
-let HTR = [];
-
-// ── VALUE HELPERS ──────────────────────────────────────────
-const num = v =>{ const n=parseInt(String(v||'').replace(/[^0-9-]/g,''),10); return isNaN(n)?0:n; };
-function toIso(v){
-  v=String(v||'').trim();
-  const m=v.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-  if(!m) return null;
-  return m[3]+'-'+String(m[1]).padStart(2,'0')+'-'+String(m[2]).padStart(2,'0');
-}
-
-// ── PARSE CC ACCOUNTABILITY ────────────────────────────────
-// Column layout (0-indexed): 0 name | 1 overdue | 2 starting(load)
-// then repeating [starting, schWk, completedWk] per week:
-//   Wk1 sch=3 comp=4 | Wk2 sch=6 comp=7 | Wk3 sch=9 comp=10 | Wk4 sch=12 comp=13 | Wk5 sch=15 comp=16
-// 18 = pending documentation.
-function parseCC(rows){
-  const teams={}; SUPS.forEach(s=>teams[s]=[]);
-  let cur=null;
-  rows.forEach((r,idx)=>{
-    const name=String(r[0]==null?'':r[0]).trim();
-    if(!name) return;
-    if(idx===0){ // header row: "<Month> Care Coordinator <Sup>"
-      const mm=name.match(/^([A-Za-z]+)/); if(mm) DATA_MONTH = mm[1]+' '+NOW.getFullYear();
-      cur = SUPS.find(s=>name.indexOf(s)!==-1) || 'Courtney';
-      return;
+  function jumpTo(card){
+    card.scrollIntoView({behavior: reduce ? "auto" : "smooth", block: "start"});
+    if(!reduce){
+      card.classList.remove("flash");
+      void card.offsetWidth;
+      card.classList.add("flash");
+      setTimeout(function(){ card.classList.remove("flash"); }, 1700);
     }
-    if(SUPS.indexOf(name)!==-1){ cur=name; return; } // supervisor section header
-    if(!cur) return;
-    const schIdx = 3*WEEK_N;            // current week's "Sch. Wk N"
-    let completed=0;
-    for(let k=1;k<=WEEK_N;k++){ completed += num(r[3*k+1]); } // sum Completed Wk1..N
-    const rec={
-      name: FULL_NAME[name] || name,
-      overdue: num(r[1]),
-      starting: num(r[2]),
-      sch_wk1: num(r[schIdx]),
-      completed: completed,
-      pending: num(r[18])
-    };
-    teams[cur].push(rec); // Alexa stays under Zukrat (her block in the sheet)
-  });
-  return SUPS.filter(s=>teams[s].length).map(s=>({supervisor:s, team:teams[s]}));
-}
+    var pre = card.querySelector("pre.prompt");
+    if(pre){ pre.setAttribute("tabindex","-1"); }
+  }
 
-// ── PARSE HARD TO REACH ────────────────────────────────────
-// Four side-by-side 8-col blocks (one per supervisor), separated by a
-// blank spacer column. Block start columns: 0, 9, 18, 27.
-function parseHTR(rows){
-  const blocks=[{sup:'Courtney',c:0},{sup:'Jennifer',c:9},{sup:'Zukrat',c:18},{sup:'Jarrett',c:27}];
-  const out=[];
-  rows.forEach((r,idx)=>{
-    if(idx===0) return; // header row
-    blocks.forEach(b=>{
-      const member=String(r[b.c]==null?'':r[b.c]).trim();
-      if(!member) return;
-      out.push({
-        sup: b.sup,
-        member: member,
-        cn: String(r[b.c+1]==null?'':r[b.c+1]).trim(),
-        reason: String(r[b.c+2]==null?'':r[b.c+2]).trim() || 'Unknown',
-        lc: toIso(r[b.c+3]),
-        la: toIso(r[b.c+4]),
-        hold: String(r[b.c+5]==null?'':r[b.c+5]).trim().toUpperCase()==='TRUE',
-        cc: String(r[b.c+6]==null?'':r[b.c+6]).trim(),
-        d30: String(r[b.c+7]==null?'':r[b.c+7]).trim().toUpperCase()==='TRUE'
+  /* ---- copy buttons ---- */
+  function fallbackCopy(text, done){
+    var ta = document.createElement("textarea");
+    ta.value = text; ta.setAttribute("readonly","");
+    ta.style.position="fixed"; ta.style.top="0"; ta.style.left="0"; ta.style.opacity="0";
+    document.body.appendChild(ta); ta.focus(); ta.select();
+    try{ document.execCommand("copy"); done(true); }catch(e){ done(false); }
+    document.body.removeChild(ta);
+  }
+  function doCopy(text, done){
+    if(navigator.clipboard && window.isSecureContext){
+      navigator.clipboard.writeText(text).then(function(){done(true);}, function(){ fallbackCopy(text, done); });
+    } else { fallbackCopy(text, done); }
+  }
+  document.querySelectorAll(".copybtn").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var card = btn.closest(".card");
+      var pre = card.querySelector("pre.prompt");
+      var text = pre.textContent;
+      var label = btn.querySelector(".label");
+      doCopy(text, function(ok){
+        if(ok){
+          btn.classList.add("copied");
+          label.textContent = "Copied \u2014 now paste into Otter";
+          if(!reduce){ pre.classList.add("lit"); }
+          live.textContent = "Prompt copied to clipboard.";
+          setTimeout(function(){
+            btn.classList.remove("copied");
+            label.textContent = "Copy prompt";
+            pre.classList.remove("lit");
+          }, 2100);
+        } else {
+          label.textContent = "Press Ctrl+C to copy";
+          try{
+            var r = document.createRange(); r.selectNodeContents(pre);
+            var sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r);
+          }catch(e){}
+          live.textContent = "Select the prompt and press Ctrl+C to copy.";
+        }
       });
     });
   });
-  return out;
-}
 
-// ── HELPERS (rendering) ────────────────────────────────────
-function ds(d){ if(!d) return null; return Math.round((TODAY-new Date(d))/864e5); }
-function fd(d){ if(!d) return null; return new Date(d).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); }
+  /* ---- search + category filter ---- */
+  var search = document.getElementById("search");
+  var chips = Array.prototype.slice.call(document.querySelectorAll(".chip"));
+  var cats = Array.prototype.slice.call(document.querySelectorAll(".cat"));
+  var noResults = document.getElementById("noresults");
+  var activeCat = "all";
 
-function calc(cc){
-  const vr  = Math.max(0,(cc.starting||0)-(cc.completed||0)-(cc.pending||0));
-  const tgt = Math.min(vr, Math.ceil(vr/WORK_WEEKS_LEFT));
-  const gap = (cc.sch_wk1||0)-tgt;
-  let st = vr===0||(cc.sch_wk1||0)>=tgt-1 ? 'on' : (cc.sch_wk1||0)>=Math.ceil(tgt*.6) ? 'risk' : 'behind';
-  return {vr,tgt,gap,st};
-}
-
-function note(cc,vr,tgt,gap,st){
-  const catchUp = tgt+Math.ceil(Math.abs(gap)/3);
-  let msg='';
-  if (vr===0)          msg='All visits accounted for. Clear pending docs.';
-  else if (gap>=3)     msg=`Ahead by ${gap} — maintain ${tgt}/week.`;
-  else if (gap>=0)     msg=`On pace — keep scheduling ${tgt}/week.`;
-  else if (gap>=-2)    msg=`${Math.abs(gap)} short — schedule ${tgt} next week.`;
-  else if ((cc.sch_wk1||0)===0) msg=`No Wk ${WEEK_N} scheduling — must start ${tgt}/week now.`;
-  else                 msg=`${Math.abs(gap)} short — need ~${catchUp} next week to recover.`;
-  if ((cc.overdue||0)>=10) msg+=` ⚠️ ${cc.overdue} overdue services need attention.`;
-  else if ((cc.overdue||0)>0) msg+=` Note: ${cc.overdue} overdue.`;
-  if ((cc.pending||0)>=10) msg+=` 📋 File ${cc.pending} pending docs.`;
-  return msg;
-}
-
-// ── RENDER ─────────────────────────────────────────────────
-function renderHeader(){
-  document.getElementById('datePill').textContent = 'As of '+TODAY.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
-  document.getElementById('monthPill').textContent = DATA_MONTH.toUpperCase();
-  document.getElementById('lastUpdated').textContent = TODAY.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
-  document.getElementById('weekLabel').textContent = 'Week '+WEEK_N+' of '+DATA_MONTH.split(' ')[0];
-}
-
-function renderCards(){
-  let ts=0,tc=0,to=0,tp=0,behind=0,risk=0,on=0;
-  CC_DATA.forEach(s=>s.team.forEach(cc=>{
-    ts+=(cc.starting||0); tc+=(cc.completed||0); to+=(cc.overdue||0); tp+=(cc.pending||0);
-    const {st}=calc(cc);
-    if(st==='behind')behind++; else if(st==='risk')risk++; else on++;
-  }));
-  const done = tc + tp; const pct = ts ? Math.round(done/ts*100) : 0;
-  document.getElementById('cards').innerHTML=`
-    <div class="card blue"><div class="cl">Total ${DATA_MONTH.split(' ')[0]} CPRs</div><div class="cv">${ts}</div><div class="cs">Starting load across all CCs</div></div>
-    <div class="card green"><div class="cl">Total Completed CPRs</div><div class="cv">${done} <span style="font-size:17px;color:#16a34a;font-weight:800">· ${pct}%</span></div><div class="cs">${pct}% of the ${ts} ${DATA_MONTH.split(' ')[0]} load · incl. ${tp} pending docs</div></div>
-    <div class="card red"><div class="cl">Behind / At Risk</div><div class="cv">${behind+risk}</div><div class="cs">${behind} behind · ${risk} at risk · ${on} on track</div></div>
-    <div class="card amber"><div class="cl">Overdue Services</div><div class="cv">${to}</div><div class="cs">Prior-period services still open</div></div>
-    <div class="card purple"><div class="cl">Pending Documentation</div><div class="cv">${tp}</div><div class="cs">Visits done · paperwork outstanding</div></div>
-  `;
-}
-
-function renderPerf(){
-  let html='';
-  CC_DATA.forEach((sg,si)=>{
-    const col=SUP_COLORS[sg.supervisor]||'#555';
-    const ts=sg.team.reduce((s,c)=>s+(c.starting||0),0);
-    const to=sg.team.reduce((s,c)=>s+(c.overdue||0),0);
-    const tp=sg.team.reduce((s,c)=>s+(c.pending||0),0);
-    const tc=sg.team.reduce((s,c)=>s+(c.completed||0),0);
-    const tdone=tc+tp; const tpct=ts?Math.round(tdone/ts*100):0;
-    const bh=sg.team.filter(c=>calc(c).st==='behind').length;
-    html+=`<div class="sup-block">
-      <div class="sup-head">
-        <div style="display:flex;align-items:center;gap:8px">
-          <span class="sup-tag" style="background:${col}">${sg.supervisor}'s Team</span>
-          <span style="font-size:11px;color:#888">${sg.team.length} CCs</span>
-        </div>
-        <div class="sup-stats">
-          <span><strong>${ts}</strong> total CPRs</span>
-          <span style="color:#16a34a"><strong>${tdone}</strong> completed (${tpct}%)</span>
-          <span><strong>${to}</strong> overdue</span>
-          <span><strong>${tp}</strong> pending docs</span>
-          ${bh>0?`<span style="color:#991b1b;font-weight:800">⚠ ${bh} behind</span>`:''}
-        </div>
-      </div>
-      <table class="acct-table"><thead><tr>
-        <th style="text-align:left">Care Coordinator</th>
-        <th title="Total CPRs assigned for the month">${DATA_MONTH.split(' ')[0]} Load</th>
-        <th title="Visits completed but docs not filed">Pending Docs</th>
-        <th title="Starting CPRs minus completed and pending docs">Visits Remaining</th>
-        <th class="th-target" title="Visits Remaining ÷ weeks left in the month (full weeks the month spans, counting down each week) — the weekly average needed to finish">→ WEEKLY TARGET</th>
-        <th>Wk ${WEEK_N} Sched'd</th>
-        <th>Schedule Check</th>
-        <th>Overdue</th>
-        <th style="min-width:200px;text-align:left">Supervisor Talking Point</th>
-      </tr></thead><tbody>`;
-    sg.team.forEach((cc,ci)=>{
-      const {vr,tgt,gap,st}=calc(cc);
-      const n=note(cc,vr,tgt,gap,st);
-      const rc=st==='on'?'r-on-track':st==='risk'?'r-at-risk':'r-behind';
-      const tc=st==='on'?'tgt-green':st==='risk'?'tgt-amber':'tgt-red';
-      let pb,pc;
-      if(vr===0){pb='p-on';pc='✅ No Visits Needed';}
-      else if(gap>=3){pb='p-ahead';pc=`✅ Ahead by ${gap}`;}
-      else if(gap>=0){pb='p-on';pc='✅ On Pace';}
-      else if(gap>=-2){pb='p-close';pc=`⚡ ${Math.abs(gap)} short`;}
-      else if((cc.sch_wk1||0)===0){pb='p-behind';pc='🔴 Not Started';}
-      else{pb='p-short';pc=`⚠️ Short by ${Math.abs(gap)}`;}
-      const ov=(cc.overdue||0)>0?`<span class="n-warn">${cc.overdue}</span>`:`<span class="n-gray">—</span>`;
-      const pend=(cc.pending||0)>0?`<span style="color:#d97706;font-weight:700">${cc.pending}</span>`:`<span class="n-gray">—</span>`;
-      const done=(cc.completed||0)>0?`<span style="color:#166534;font-weight:700">${cc.completed}</span>`:`<span class="n-gray">—</span>`;
-      const ovBadge=(cc.overdue||0)>0?`<span class="cc-ov ${cc.overdue>=10?'hi':''}">${cc.overdue} overdue</span>`:'';
-      const tpc=st==='behind'?'tp-red':st==='risk'?'tp-warn':'';
-      html+=`<tr class="${rc}">
-        <td><span class="cc-name">${cc.name}</span>${ovBadge} <a class="email-link" onclick="openEmail(${si},${ci})">✉ Email</a></td>
-        <td class="n-num">${cc.starting||0}</td>
-        <td>${pend}</td>
-        <td class="n-bold">${vr}</td>
-        <td class="td-target"><div class="tgt-inner ${tc}"><div class="tgt-num">${tgt}</div><div class="tgt-unit">per week</div></div></td>
-        <td class="n-num">${cc.sch_wk1||0}</td>
-        <td><span class="pace-badge ${pb}">${pc}</span></td>
-        <td>${ov}</td>
-        <td class="talking-pt ${tpc}">${n}</td>
-      </tr>`;
+  function applyFilter(){
+    var q = (search.value || "").toLowerCase().trim();
+    var anyVisible = false;
+    cards.forEach(function(card){
+      var inCat = (activeCat === "all") || (card.getAttribute("data-cat") === activeCat);
+      var title = card.querySelector(".card-title").textContent;
+      var metas = Array.prototype.map.call(card.querySelectorAll(".meta, .egs"), function(m){return m.textContent;}).join(" ");
+      var hay = (card.getAttribute("data-keywords") + " " + title + " " + metas).toLowerCase();
+      var match = q === "" || hay.indexOf(q) !== -1;
+      var show = inCat && match;
+      card.style.display = show ? "" : "none";
+      if(show) anyVisible = true;
     });
-    html+='</tbody></table></div>';
-  });
-  document.getElementById('perfContent').innerHTML=html;
-}
-
-function renderHtr(f){
-  let html='';
-  SUPS.filter(s=>s!=='Shuronda').forEach(sup=>{
-    let mbs=HTR.filter(m=>m.sup===sup);
-    if(f==='critical') mbs=mbs.filter(m=>{const d=ds(m.lc);return d===null||(d>60&&!m.d30);});
-    else if(f==='no30') mbs=mbs.filter(m=>!m.d30);
-    else if(f==='hold') mbs=mbs.filter(m=>m.hold);
-    if(!mbs.length) return;
-    const col=SUP_COLORS[sup]||'#555';
-    html+=`<div class="htr-sup">
-      <div class="htr-sup-head">
-        <span class="sup-tag" style="background:${col}">${sup}'s Team</span>
-        <span class="htr-cnt">${mbs.length} member${mbs.length!==1?'s':''}</span>
-      </div>
-      <table class="htr-tbl"><thead><tr>
-        <th>Member</th><th>Reason</th><th>Last Contact</th>
-        <th>Days Since</th><th>Last Attempted</th><th>CC Assigned</th>
-        <th style="text-align:center">On Hold</th>
-        <th style="text-align:center">30-Day</th><th>Urgency</th>
-      </tr></thead><tbody>`;
-    mbs.forEach(m=>{
-      const d=ds(m.lc), ad=ds(m.la);
-      let uc,ul;
-      if(d===null){uc='u-crit';ul='⚠ No Record';}
-      else if(d>90&&!m.d30){uc='u-crit';ul=`${d}d · 30-Day Overdue`;}
-      else if(d>60&&!m.d30){uc='u-crit';ul=`${d}d · Action Needed`;}
-      else if(d>30&&!m.d30){uc='u-high';ul=`${d}d · 30-Day Needed`;}
-      else if(d>30&&m.d30){uc='u-med';ul=`${d}d · 30-Day Sent`;}
-      else if(d>14){uc='u-med';ul=`${d}d ago`;}
-      else{uc='u-rec';ul=`${d}d ago`;}
-      const dc=d===null?'dc':d>90?'dc':d>60?'dh':d>30?'dm':'dg';
-      const dDisp=d!==null?d+'d':'<span style="color:#dc2626">—</span>';
-      html+=`<tr>
-        <td><span class="m-name">${m.member}</span>${m.hold?'<span class="hold-tag">HOLD</span>':''}<span class="m-cn">${m.cn}</span></td>
-        <td>${m.reason}</td>
-        <td style="white-space:nowrap">${fd(m.lc)||'<span class="no-data">None on record</span>'}</td>
-        <td class="days-num ${dc}">${dDisp}</td>
-        <td style="font-size:12px;color:#555;white-space:nowrap">${m.la?`${fd(m.la)}<br><span style="font-size:10.5px;color:#9ca3af">(${ad}d ago)</span>`:'<span class="no-data">—</span>'}</td>
-        <td>${m.cc}</td>
-        <td style="text-align:center">${m.hold?'<span style="color:#dc2626;font-weight:800">🚫 Yes</span>':'<span style="color:#ccc">—</span>'}</td>
-        <td style="text-align:center">${m.d30?'<span class="sy">✓</span>':'<span class="sn">✗</span>'}</td>
-        <td><span class="urg ${uc}">${ul}</span></td>
-      </tr>`;
+    // hide category headers that have no visible cards
+    cats.forEach(function(cat){
+      var vis = Array.prototype.filter.call(cat.querySelectorAll(".card"), function(c){ return c.style.display !== "none"; });
+      cat.style.display = vis.length ? "" : "none";
     });
-    html+='</tbody></table></div>';
+    noResults.style.display = anyVisible ? "none" : "block";
+  }
+
+  search.addEventListener("input", applyFilter);
+  chips.forEach(function(chip){
+    chip.addEventListener("click", function(){
+      activeCat = chip.getAttribute("data-cat");
+      chips.forEach(function(c){ c.setAttribute("aria-pressed", c === chip ? "true" : "false"); });
+      applyFilter();
+    });
   });
-  document.getElementById('htrContent').innerHTML=html||'<p style="color:#999;padding:20px;text-align:center">No members match this filter.</p>';
-}
 
-function filterHtr(f,el){
-  document.querySelectorAll('.fbt').forEach(b=>b.classList.remove('active'));
-  el.classList.add('active'); renderHtr(f);
-}
-function switchTab(id,el){
-  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
-  el.classList.add('active'); document.getElementById(id).classList.add('active');
-}
-
-// ── EMAIL GENERATOR ────────────────────────────────────────
-function nextFriday(){
-  const d=new Date(TODAY); const add=(5 - d.getDay() + 7) % 7;
-  d.setDate(d.getDate()+add);
-  return d.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
-}
-function buildEmail(cc){
-  const {vr,tgt}=calc(cc);
-  const first=String(cc.name).split(' ')[0];
-  const mon=DATA_MONTH.split(' ')[0];
-  const sch=cc.sch_wk1||0;
-  const onPace = vr===0 || sch>=tgt;
-  const status = onPace ? 'On Pace' : ('Behind by '+(tgt-sch));
-  const comments = onPace
-    ? `You're tracking well for ${mon}. The goal now is to maintain momentum and avoid creating a larger workload later in the month. Please review the information below and confirm your plan for the upcoming weeks.`
-    : `Your CPR numbers are currently behind pace for ${mon}. Based on your remaining workload, you must average ${tgt} CPRs per week to finish the month successfully. I need a clear action plan below outlining how you intend to get back on track.`;
-  const overdue = (cc.overdue||0)>0 ? `${cc.overdue} overdue service${cc.overdue===1?'':'s'} on record.` : 'No overdue services identified at this time.';
-  const mine = HTR.filter(m=>m.cc===cc.name);
-  let htr;
-  if(!mine.length){ htr='No Hard-to-Reach members at this time.'; }
-  else {
-    htr='Member\tCN#\tLast Successful Contact\tLast Attempt\tProvider Contacted?\tServices on Hold?\tNext Action\n'
-      + mine.map(m=>`${m.member}\t${m.cn}\t${fd(m.lc)||'—'}\t${fd(m.la)||'—'}\t\t${m.hold?'Yes':'No'}\t`).join('\n');
-  }
-  return `${first},
-
-STATUS UPDATE
-${mon} CPR Assigned: ${cc.starting||0}
-Pending Documentation: ${cc.pending||0}
-CPRs Remaining: ${vr}
-Weekly CPR Target: ${tgt} per week
-
-Week ${WEEK_N} Performance
-Scheduled: ${sch}
-Target: ${tgt}
-Status: ${status}
-
-SUPERVISOR COMMENTS
-${comments}
-
-OVERDUE SERVICES
-${overdue}
-
-ACTION PLAN REQUIRED
-Please reply by Friday, ${nextFriday()} with the following:
-
-1. CPRs You Will Complete This Week
-Member Name\tCN#
-
-2. CPRs Scheduled for Future Weeks
-Member Name\tCN#\tTarget Week
-
-HARD-TO-REACH MEMBERS
-Complete only for members currently meeting Hard-to-Reach criteria.
-${htr}
-
-Your weekly target is ${tgt} CPRs.
-I expect proactive scheduling, documented outreach efforts, and a clear plan for any member creating barriers to completion.
-Please let me know if there is anything I can do to help and assist.`;
-}
-function openEmail(si,ci){
-  const cc=CC_DATA[si].team[ci];
-  document.getElementById('emTitle').textContent='Email to '+cc.name;
-  document.getElementById('emSub').textContent='Suggested subject: '+DATA_MONTH.split(' ')[0]+' CPR Status Update — '+cc.name;
-  document.getElementById('emBody').value=buildEmail(cc);
-  document.getElementById('emCopied').textContent='';
-  document.getElementById('emailModal').style.display='flex';
-}
-function closeEmail(){ document.getElementById('emailModal').style.display='none'; }
-function copyEmail(){
-  const ta=document.getElementById('emBody');
-  const done=()=>{ document.getElementById('emCopied').textContent='✓ Copied — paste into a new email'; };
-  if(navigator.clipboard&&navigator.clipboard.writeText){
-    navigator.clipboard.writeText(ta.value).then(done, ()=>{ ta.select(); document.execCommand('copy'); done(); });
-  } else { ta.select(); document.execCommand('copy'); done(); }
-}
-
-// ── BOOT: fetch sheet, parse, render ───────────────────────
-async function boot(){
-  try{
-    const [ccRows, htrRows] = await Promise.all([ loadTab(TAB_CC), loadTab(TAB_HTR) ]);
-    CC_DATA = parseCC(ccRows);
-    HTR     = parseHTR(htrRows);
-    if(!CC_DATA.length) throw new Error('No care-coordinator rows found in the sheet.');
-    renderHeader(); renderCards(); renderPerf(); renderHtr('all');
-    document.getElementById('status').style.display='none';
-    document.getElementById('dash').style.display='block';
-  }catch(e){
-    const s=document.getElementById('status');
-    s.className='err';
-    s.innerHTML='Could not load live data: '+e.message+
-      '<br><br>This usually means the Department Stats sheet is no longer shared as &ldquo;anyone with the link can view,&rdquo; or a tab was renamed. '+
-      'Reload to try again.';
-  }
-}
-requireAuth(boot);
+  /* ---- back to top ---- */
+  var totop = document.getElementById("totop");
+  window.addEventListener("scroll", function(){
+    if(window.scrollY > 700){ totop.classList.add("show"); } else { totop.classList.remove("show"); }
+  }, {passive:true});
+  totop.addEventListener("click", function(){
+    window.scrollTo({top:0, behavior: reduce ? "auto" : "smooth"});
+  });
+})();
 </script>
-
-<div id="emailModal" class="email-modal-bg" onclick="if(event.target===this)closeEmail()">
-  <div class="email-modal">
-    <div class="email-modal-head">
-      <div><strong id="emTitle"></strong><div class="em-sub" id="emSub"></div></div>
-      <button class="em-x" onclick="closeEmail()">✕</button>
-    </div>
-    <textarea id="emBody" readonly></textarea>
-    <div class="email-modal-foot">
-      <button class="em-copy" onclick="copyEmail()">Copy email</button>
-      <span class="em-copied" id="emCopied"></span>
-    </div>
-  </div>
-</div>
 </body>
 </html>
