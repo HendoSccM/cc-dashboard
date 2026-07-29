@@ -288,7 +288,7 @@ function requireAuth(onUnlock){
 </div>
 
 <div class="formula-box">
-  &#128208; <strong>Weekly Target</strong> = ( Starting CPRs &minus; Completed &minus; Pending Docs ) &divide; weeks left in the month, rounded up &nbsp;&nbsp;
+  &#128208; <strong>Weekly Target</strong> = Visits Remaining ( this week's Starting CPRs &minus; Pending Docs ) &divide; weeks left in the month, rounded up &nbsp;&nbsp;
   <span class="formula-eq">Visits Remaining &divide; Wks Left = CPRs/week needed to finish on time</span>
 </div>
 
@@ -435,13 +435,18 @@ function parseCC(rows){
     const schIdx = 3*WEEK_N;            // current week's "Sch. Wk N"
     let completed=0;
     for(let k=1;k<=WEEK_N;k++){ completed += num(r[3*k+1]); } // sum Completed Wk1..N
+    // Current week's "Starting CPRs" = the running remaining the team maintains (col 3*WEEK_N-1).
+    // null if that cell is blank, in which case calc() falls back to Load − Completed.
+    const cwRaw = r[3*WEEK_N - 1];
+    const weekStart = (cwRaw!=null && String(cwRaw).trim()!=='') ? num(cwRaw) : null;
     const rec={
       name: FULL_NAME[name] || name,
       overdue: num(r[1]),
       starting: num(r[2]),
       sch_wk1: num(r[schIdx]),
       completed: completed,
-      pending: num(r[18])
+      pending: num(r[18]),
+      weekStart: weekStart
     };
     teams[cur].push(rec); // Alexa stays under Zukrat (her block in the sheet)
   });
@@ -480,7 +485,10 @@ function ds(d){ if(!d) return null; return Math.round((TODAY-new Date(d))/864e5)
 function fd(d){ if(!d) return null; return new Date(d).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); }
 
 function calc(cc){
-  const vr  = Math.max(0,(cc.starting||0)-(cc.completed||0)-(cc.pending||0));
+  // Visits Remaining = this week's "Starting CPRs" cell (team-maintained running remaining) − Pending Docs.
+  // Falls back to Load − Completed − Pending if that cell is blank.
+  const base = (cc.weekStart!=null) ? cc.weekStart : ((cc.starting||0)-(cc.completed||0));
+  const vr  = Math.max(0, base - (cc.pending||0));
   const tgt = Math.min(vr, Math.ceil(vr/WORK_WEEKS_LEFT));
   const gap = (cc.sch_wk1||0)-tgt;
   let st = vr===0||(cc.sch_wk1||0)>=tgt-1 ? 'on' : (cc.sch_wk1||0)>=Math.ceil(tgt*.6) ? 'risk' : 'behind';
@@ -555,7 +563,7 @@ function renderPerf(){
         <th style="text-align:left">Care Coordinator</th>
         <th title="Total CPRs assigned for the month">${DATA_MONTH.split(' ')[0]} Load</th>
         <th title="Visits completed but docs not filed">Pending Docs</th>
-        <th title="Starting CPRs minus completed and pending docs">Visits Remaining</th>
+        <th title="This week's Starting CPRs (the running remaining maintained in the sheet) minus pending docs">Visits Remaining</th>
         <th class="th-target" title="Visits Remaining ÷ weeks left in the month (full weeks the month spans, counting down each week) — the weekly average needed to finish">→ WEEKLY TARGET</th>
         <th>Wk ${WEEK_N} Sched'd</th>
         <th>Schedule Check</th>
