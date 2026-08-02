@@ -288,7 +288,7 @@ function requireAuth(onUnlock){
 </div>
 
 <div class="formula-box">
-  &#128208; <strong>Weekly Target</strong> = Visits Remaining ( this week's Starting CPRs &minus; Pending Docs ) &divide; weeks left in the month, rounded up &nbsp;&nbsp;
+  &#128208; <strong>Weekly Target</strong> = Visits Remaining ( this week's Starting CPRs &minus; Pending Docs ) &divide; weeks left to finish by the 2nd-to-last week, rounded up &nbsp;&nbsp;
   <span class="formula-eq">Visits Remaining &divide; Wks Left = CPRs/week needed to finish on time</span>
 </div>
 
@@ -393,10 +393,11 @@ const WEEKS_LEFT = Math.max(0.5, (new Date(NOW.getFullYear(), NOW.getMonth()+1, 
 const _firstDOW = new Date(NOW.getFullYear(), NOW.getMonth(), 1).getDay();
 const _daysInMonth = new Date(NOW.getFullYear(), NOW.getMonth()+1, 0).getDate();
 const WEEKS_IN_MONTH = Math.ceil((_firstDOW + _daysInMonth) / 7);
-// Divide by the FULL weeks the month spans (July 2026 = 5), using the weeks LEFT so it counts down
-// each calendar week: July wk1÷5, wk2÷4, wk3÷3, wk4÷2, wk5÷1 — i.e. the weeks remaining in the month.
-const WORK_WEEKS = WEEKS_IN_MONTH;
-const WORK_WEEKS_LEFT = Math.max(1, WORK_WEEKS - (WEEK_N - 1));
+// Tracking weeks = the month's weeks, capped at the sheet's 5 week-columns (Aug 2026 spans 6 → 5).
+const TRACK_WEEKS = Math.min(5, WEEKS_IN_MONTH);
+// Average targets finishing by the NEXT-TO-LAST week (leaves the final week as a buffer):
+// weeks left to reach week (TRACK_WEEKS − 1). Aug (5 tracking weeks): wk1÷4, wk2÷3, wk3÷2, wk4÷1, wk5÷1.
+const WORK_WEEKS_LEFT = Math.max(1, TRACK_WEEKS - WEEK_N);
 let DATA_MONTH = NOW.toLocaleDateString('en-US',{month:'long',year:'numeric'});
 
 const TODAY = new Date(DATA_DATE);
@@ -564,7 +565,7 @@ function renderPerf(){
         <th title="Total CPRs assigned for the month">${DATA_MONTH.split(' ')[0]} Load</th>
         <th title="Visits completed but docs not filed">Pending Docs</th>
         <th title="This week's Starting CPRs (the running remaining maintained in the sheet) minus pending docs">Visits Remaining</th>
-        <th class="th-target" title="Visits Remaining ÷ weeks left in the month (full weeks the month spans, counting down each week) — the weekly average needed to finish">→ WEEKLY TARGET</th>
+        <th class="th-target" title="Visits Remaining ÷ weeks left to finish by the next-to-last week of the month (leaves the final week as buffer) — counts down each week">→ WEEKLY TARGET</th>
         <th>Wk ${WEEK_N} Sched'd</th>
         <th>Schedule Check</th>
         <th>Overdue</th>
@@ -740,10 +741,26 @@ function copyEmail(){
   } else { ta.select(); document.execCommand('copy'); done(); }
 }
 
+// Find the CC accountability tab whether it's named "CC Department '26" or "CC Department <Month> 26'"
+// / "CC Department <Month> '26". gviz returns the first sheet for an unknown name, so we validate that
+// the header actually contains "Care Coordinator" before accepting a tab.
+async function loadCCTab(){
+  const mon = NOW.toLocaleDateString('en-US',{month:'long'});
+  const mo3 = mon.slice(0,3);
+  const cands = [ TAB_CC,
+    "CC Department "+mon+" '26", "CC Department "+mon+" 26'", "CC Department "+mon+" 26",
+    "CC Department "+mo3+" '26", "CC Department "+mo3+" 26'" ];
+  for(const nm of cands){
+    try{ const rows = await loadTab(nm);
+      if(rows && rows[0] && String(rows[0][0]||'').indexOf('Care Coordinator')!==-1) return rows;
+    }catch(e){}
+  }
+  return loadTab(TAB_CC); // last resort — surfaces as an error message downstream
+}
 // ── BOOT: fetch sheet, parse, render ───────────────────────
 async function boot(){
   try{
-    const [ccRows, htrRows] = await Promise.all([ loadTab(TAB_CC), loadTab(TAB_HTR) ]);
+    const [ccRows, htrRows] = await Promise.all([ loadCCTab(), loadTab(TAB_HTR) ]);
     CC_DATA = parseCC(ccRows);
     HTR     = parseHTR(htrRows);
     if(!CC_DATA.length) throw new Error('No care-coordinator rows found in the sheet.');
