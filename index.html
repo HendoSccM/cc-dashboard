@@ -288,7 +288,7 @@ function requireAuth(onUnlock){
 </div>
 
 <div class="formula-box">
-  &#128208; <strong>Weekly Target</strong> = Visits Remaining ( this week's Starting CPRs &minus; Pending Docs ) &divide; weeks left to finish by the 2nd-to-last week, rounded up &nbsp;&nbsp;
+  &#128208; <strong>Weekly Target</strong> = Visits Remaining ( this week's Starting CPRs &minus; Pending Docs ) &divide; weeks left to finish by the 21st (end of the 3rd week), rounded up &nbsp;&nbsp;
   <span class="formula-eq">Visits Remaining &divide; Wks Left = CPRs/week needed to finish on time</span>
 </div>
 
@@ -393,11 +393,9 @@ const WEEKS_LEFT = Math.max(0.5, (new Date(NOW.getFullYear(), NOW.getMonth()+1, 
 const _firstDOW = new Date(NOW.getFullYear(), NOW.getMonth(), 1).getDay();
 const _daysInMonth = new Date(NOW.getFullYear(), NOW.getMonth()+1, 0).getDate();
 const WEEKS_IN_MONTH = Math.ceil((_firstDOW + _daysInMonth) / 7);
-// Tracking weeks = the month's weeks, capped at the sheet's 5 week-columns (Aug 2026 spans 6 → 5).
-const TRACK_WEEKS = Math.min(5, WEEKS_IN_MONTH);
-// Average targets finishing by the NEXT-TO-LAST week (leaves the final week as a buffer):
-// weeks left to reach week (TRACK_WEEKS − 1). Aug (5 tracking weeks): wk1÷4, wk2÷3, wk3÷2, wk4÷1, wk5÷1.
-const WORK_WEEKS_LEFT = Math.max(1, TRACK_WEEKS - WEEK_N);
+// Average targets everyone DONE BY THE END OF THE 3rd WEEK = the 21st (the next-to-last week; days
+// 22-end are buffer). Divisor = 7-day weeks left until the 21st: days 1-7 ÷3, 8-14 ÷2, 15th-on ÷1.
+const WORK_WEEKS_LEFT = Math.max(1, Math.ceil((22 - NOW.getDate()) / 7));
 let DATA_MONTH = NOW.toLocaleDateString('en-US',{month:'long',year:'numeric'});
 
 const TODAY = new Date(DATA_DATE);
@@ -565,7 +563,7 @@ function renderPerf(){
         <th title="Total CPRs assigned for the month">${DATA_MONTH.split(' ')[0]} Load</th>
         <th title="Visits completed but docs not filed">Pending Docs</th>
         <th title="This week's Starting CPRs (the running remaining maintained in the sheet) minus pending docs">Visits Remaining</th>
-        <th class="th-target" title="Visits Remaining ÷ weeks left to finish by the next-to-last week of the month (leaves the final week as buffer) — counts down each week">→ WEEKLY TARGET</th>
+        <th class="th-target" title="Visits Remaining ÷ weeks left to finish by the 21st (end of the 3rd week); days 22+ are buffer — counts down each week (÷3 days 1-7, ÷2 days 8-14, ÷1 from the 15th)">→ WEEKLY TARGET</th>
         <th>Wk ${WEEK_N} Sched'd</th>
         <th>Schedule Check</th>
         <th>Overdue</th>
