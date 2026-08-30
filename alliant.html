@@ -196,6 +196,11 @@ const TERRITORY_MAP={
     {name:'Richmond 2', counties:['Richmond 2','Columbia','McDuffie']}
   ]
 };
+// The ONLY names that act as region-group headers in the county table. A blank-number row whose name
+// is NOT one of these is treated as a normal county (e.g. "Dekalb 4" awaiting data → lists under Dekalb 3,
+// instead of being mistaken for a region and swallowing the counties below it). Add a region name here
+// if the sheet gains a new metro group.
+const REGION_HEADERS=['Atlanta','Augusta','Macon'];
 
 let _cb=0;
 function loadTab(tab){return new Promise(function(res,rej){
@@ -233,19 +238,17 @@ function parseAlliant(rows){
     if(mi>=0 && mi<=new Date().getMonth()) tech.push({total:num(rows[i][1]),sub:num(rows[i][2])});
   }}
   // counties: countyStart+1 .. nurseStart-1.
-  // A named row with NO pending/total/projected numbers = a REGION header; every other named row is a
-  // county (kept even when total is 0, so newly-added counties still show). Blank-name rows (spacers or
-  // manual subtotals) are skipped — the page computes each region's subtotal itself.
+  // A row whose name is in REGION_HEADERS = a REGION group header; every other named row is a county
+  // (kept even when its numbers are blank/0, so a not-yet-staffed county like "Dekalb 4" still lists in
+  // place instead of being read as a region). Blank-name rows (spacers / manual subtotals) are skipped —
+  // the page computes each region's subtotal itself.
   const counties=[];
   if(countyStart>=0){ const stop=nurseStart>=0?nurseStart:rows.length;
     for(let i=countyStart+1;i<stop;i++){
       const r=rows[i];
       const name=String(r[0]==null?'':r[0]).trim();
       if(!name){ const st=String(r[4]||'').trim(); if(st) counties.push({type:'status',status:st}); continue; } // blank row carrying a subtotal status
-      const pRaw=String(r[1]==null?'':r[1]).trim();
-      const tRaw=String(r[2]==null?'':r[2]).trim();
-      const jRaw=String(r[3]==null?'':r[3]).trim();
-      if(pRaw===''&&tRaw===''&&jRaw===''){ counties.push({type:'region',name,status:String(r[4]||'').trim()}); continue; }
+      if(REGION_HEADERS.some(rn=>rn.toLowerCase()===name.toLowerCase())){ counties.push({type:'region',name,status:String(r[4]||'').trim()}); continue; }
       counties.push({type:'county',name,pending:num(r[1]),total:num(r[2]),proj:num(r[3]),status:String(r[4]||'').trim()});
     }}
   // nurses: nurseStart+1 .. end, rows with a name; the totals row has empty name
