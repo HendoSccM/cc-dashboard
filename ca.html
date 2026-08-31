@@ -417,7 +417,7 @@ function switchTab(id,el){document.querySelectorAll('.tab-btn').forEach(b=>b.cla
 async function loadCATab(){
   const mon=NOW.toLocaleDateString('en-US',{month:'long'}), mo3=mon.slice(0,3);
   const cands=[];
-  for(const m of [mon, mo3]){
+  for(const m of [mo3, mon]){
     cands.push("CA Department "+m+"'26","CA Department "+m+" '26","CA Department "+m+" 26'","CA Department "+m+" 26","CA Department "+m+"26","CA Department "+m);
   }
   cands.push(TAB_DEPT);
