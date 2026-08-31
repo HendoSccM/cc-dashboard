@@ -411,13 +411,15 @@ function renderHtr(f){
 function filterHtr(f,el){document.querySelectorAll('.fbt').forEach(b=>b.classList.remove('active'));el.classList.add('active');renderHtr(f);}
 function switchTab(id,el){document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));el.classList.add('active');document.getElementById(id).classList.add('active');}
 
-// Find the CA tab whether it's named "CA Department '26" or "CA Department <Month> 26'"/"<Month> '26".
+// Find the CA tab across every naming style the team uses — "CA Department '26",
+// "CA Department <Month> 26'", "CA Department Sep'26" (no space, apostrophe-before), etc.
 // gviz returns the first sheet for an unknown name, so validate the header contains "Communications Analyst".
 async function loadCATab(){
   const mon=NOW.toLocaleDateString('en-US',{month:'long'}), mo3=mon.slice(0,3);
-  const cands=[ TAB_DEPT,
-    "CA Department "+mon+" '26", "CA Department "+mon+" 26'", "CA Department "+mon+" 26",
-    "CA Department "+mo3+" '26", "CA Department "+mo3+" 26'" ];
+  const cands=[TAB_DEPT];
+  for(const m of [mon, mo3]){
+    cands.push("CA Department "+m+"'26","CA Department "+m+" '26","CA Department "+m+" 26'","CA Department "+m+" 26","CA Department "+m+"26","CA Department "+m);
+  }
   for(const nm of cands){
     try{ const rows=await loadTab(nm);
       if(rows && rows[0] && String(rows[0][0]||'').indexOf('Communications Analyst')!==-1) return rows;
