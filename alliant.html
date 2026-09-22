@@ -230,12 +230,15 @@ function parseAlliant(rows){
     if(MONTHNAMES.includes(m)) monthly.push({ia:num(rows[i][1]),ra:num(rows[i][2]),back:num(rows[i][3])});
     if(monthly.length>=12) break;
   }
-  // tech monthly (Total col1, Submitted col2)
+  // tech monthly (Total col1, Submitted col2) — collect every month in order, flagging which have
+  // data so the chart can auto-extend to future months once numbers are entered.
   const tech=[];
   if(monthTech>=0){ for(let i=monthTech+1;i<(countyStart>=0?countyStart:rows.length);i++){
     const m=String(rows[i][0]||'').trim().toLowerCase().slice(0,3);
     const mi=MSHORT.findIndex(s=>s.toLowerCase()===m);
-    if(mi>=0 && mi<=new Date().getMonth()) tech.push({total:num(rows[i][1]),sub:num(rows[i][2])});
+    if(mi<0) continue;
+    const has=String(rows[i][1]).trim()!==''||String(rows[i][2]).trim()!=='';
+    tech.push({total:num(rows[i][1]),sub:num(rows[i][2]),has});
   }}
   // counties: countyStart+1 .. nurseStart-1.
   // A row whose name is in REGION_HEADERS = a REGION group header; every other named row is a county
@@ -310,7 +313,12 @@ function renderCounties(items){
 
 function render(d){
   const cm=new Date().getMonth(); // 0-11
-  const upto=d.monthly.slice(0,cm+1);
+  // Show every month that has data entered — including months the team fills in AHEAD of the
+  // calendar (e.g. October/November packages logged during September). Extends automatically as
+  // new months are entered, but never shows fewer than the current month.
+  let lastM=cm; for(let i=0;i<d.monthly.length;i++){ if(d.monthly[i].ia||d.monthly[i].ra||d.monthly[i].back) lastM=Math.max(lastM,i); }
+  const upto=d.monthly.slice(0,lastM+1);
+  const rangeLbl='Jan – '+(MSHORT[lastM]||'current month');
   const ytdIA=upto.reduce((s,m)=>s+m.ia,0);
   const ytdRA=upto.reduce((s,m)=>s+m.ra,0);
   const ytdBack=upto.reduce((s,m)=>s+m.back,0);
@@ -319,8 +327,8 @@ function render(d){
 
   document.getElementById('kpis').innerHTML=
     kpiCard('navy','📈','YTD Total Back',ytdBack.toLocaleString(),'IAs + RAs returned')+
-    kpiCard('sky','📋','YTD IAs',ytdIA.toLocaleString(),'Jan – current month')+
-    kpiCard('purple','📝','YTD RAs',ytdRA.toLocaleString(),'Jan – current month')+
+    kpiCard('sky','📋','YTD IAs',ytdIA.toLocaleString(),rangeLbl)+
+    kpiCard('purple','📝','YTD RAs',ytdRA.toLocaleString(),rangeLbl)+
     kpiCard('red','🚨','Overdue RAs',d.nurseTot.overdue.toLocaleString(),'of '+d.nurseTot.total.toLocaleString()+' assigned')+
     kpiCard('gold','👩‍⚕️','Follow-Up Nurses',followUp,'of '+d.nurses.length+' nurses')+
     kpiCard('green','🗺️','Counties at Risk',atRisk,'1-MO or 2-MO warning');
@@ -336,10 +344,12 @@ function render(d){
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}},scales:{y:{beginAtZero:true,grid:{color:'#f1f5f9'}}}}
   });
 
+  let lastT=cm; for(let i=0;i<d.tech.length;i++){ if(d.tech[i].has) lastT=Math.max(lastT,i); }
+  const techUp=d.tech.slice(0,lastT+1);
   new Chart(document.getElementById('techChart'),{type:'line',
-    data:{labels:MSHORT.slice(0,d.tech.length),datasets:[
-      {label:'Total',data:d.tech.map(m=>m.total),borderColor:C.navy,backgroundColor:C.navy,tension:.3,pointRadius:4},
-      {label:'Submitted',data:d.tech.map(m=>m.sub),borderColor:C.sky,backgroundColor:C.sky,tension:.3,pointRadius:4}
+    data:{labels:MSHORT.slice(0,techUp.length),datasets:[
+      {label:'Total',data:techUp.map(m=>m.total),borderColor:C.navy,backgroundColor:C.navy,tension:.3,pointRadius:4},
+      {label:'Submitted',data:techUp.map(m=>m.sub),borderColor:C.sky,backgroundColor:C.sky,tension:.3,pointRadius:4}
     ]},
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}},scales:{y:{beginAtZero:true,grid:{color:'#f1f5f9'}}}}
   });
