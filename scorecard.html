@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Second Chance CM — Team Scorecard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root { color-scheme: light; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f2f6; color: #1a2332; font-size: 13px; line-height: 1.4; }
+
+.dept-bar { background:#091d42; }
+.dept-bar-inner { display:flex; align-items:center; gap:18px; padding:8px 22px; flex-wrap:wrap; }
+.dept-brand { font-weight:800; font-size:12px; letter-spacing:.3px; color:rgba(255,255,255,.9); }
+.dept-links { display:flex; gap:6px; align-items:center; flex-wrap:wrap; }
+.dept-links a { color:rgba(255,255,255,.75); text-decoration:none; font-size:12px; font-weight:700; padding:5px 12px; border-radius:6px; }
+.dept-links a:hover { background:rgba(255,255,255,.12); color:#fff; }
+.dept-links a.active { background:#f5a623; color:#091d42; }
+
+.header { background: linear-gradient(120deg, #0d2640, #1a4e7a); color: #fff; padding: 14px 22px; display: flex; justify-content: space-between; align-items: center; }
+.header h1 { font-size: 16px; font-weight: 700; }
+.header p  { font-size: 11px; opacity: .6; margin-top: 2px; }
+.brand-wrap{display:flex;align-items:center;gap:13px;}
+.brand-logo{height:36px;width:auto;background:#fff;padding:5px 9px;border-radius:8px;}
+.pill { padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.2); }
+
+.wrap { padding: 18px 22px 30px; max-width:1500px; }
+.note { background:#eef6ff; border:1px solid #bfdbfe; border-radius:8px; padding:10px 14px; font-size:12px; color:#1e40af; margin-bottom:18px; }
+.note b{color:#1e3a8a;}
+
+.sec-label { font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:.8px; color:#64748b; margin:22px 0 10px; }
+.card { background:#fff; border-radius:10px; box-shadow:0 1px 6px rgba(0,0,0,.07); padding:18px 20px; margin-bottom:18px; }
+.card h2 { font-size:14px; color:#0d2640; margin-bottom:4px; }
+.card .sub { font-size:11px; color:#94a3b8; margin-bottom:14px; }
+
+table.sc { width:100%; border-collapse:collapse; }
+table.sc th, table.sc td { padding:10px 8px; text-align:center; font-size:13px; border-bottom:1px solid #eef1f5; }
+table.sc thead th { background:#f4f6fa; font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.5px; color:#6b7280; border-bottom:2px solid #e4e8ef; white-space:nowrap; }
+table.sc thead th.live { background:#fff7ed; color:#9a3412; }
+table.sc th:first-child, table.sc td:first-child { text-align:left; font-weight:700; color:#0d2640; min-width:120px; }
+table.sc tr.overall td { border-top:2px solid #cbd5e1; font-weight:800; background:#f8fafc; }
+table.sc tr.overall td:first-child { color:#091d42; }
+.pcell { display:inline-block; min-width:46px; padding:3px 8px; border-radius:14px; font-weight:800; font-size:12.5px; }
+.pblank { color:#cbd5e1; font-weight:600; }
+.chart-box { height:300px; margin-top:6px; }
+.legend-hint { font-size:11px; color:#94a3b8; margin-top:8px; }
+.swatch{display:inline-block;width:10px;height:10px;border-radius:3px;margin:0 3px 0 10px;vertical-align:middle;}
+#status{padding:30px 22px;font-size:13px;color:#6b7280;} #status.err{color:#991b1b;}
+
+#authGate{position:fixed;inset:0;z-index:99999;background:linear-gradient(135deg,#091d42,#1a4e7a);display:flex;align-items:center;justify-content:center;padding:20px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;}
+#authGate .ag-card{background:#fff;border-radius:14px;padding:34px 30px;width:100%;max-width:360px;box-shadow:0 20px 60px rgba(0,0,0,.35);text-align:center;}
+#authGate .ag-logo{height:54px;width:auto;margin-bottom:16px;}
+#authGate .ag-title{font-size:16px;font-weight:800;color:#0d2640;}
+#authGate .ag-sub{font-size:12px;color:#6b7280;margin:6px 0 18px;}
+#authGate input{width:100%;padding:11px 13px;border:1px solid #cdd5e0;border-radius:8px;font-size:14px;margin-bottom:12px;}
+#authGate input:focus{outline:none;border-color:#1a4e7a;box-shadow:0 0 0 3px rgba(26,78,122,.15);}
+#authGate button{width:100%;background:#1a4e7a;color:#fff;border:none;border-radius:8px;padding:11px;font-size:14px;font-weight:700;cursor:pointer;}
+#authGate button:hover{background:#0d2640;}
+#authGate #agErr{color:#dc2626;font-size:12px;font-weight:600;margin-top:10px;min-height:14px;}
+</style>
+<script>
+const SCCM_HASH="d2c9bc4cc9acc04445a83cb21f17df505e73c1c059c8311c31a88cfbdeca76ad";
+async function _sha(s){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');}
+function requireAuth(onUnlock){
+  try{ if(localStorage.getItem('sccm_ok')===SCCM_HASH){ onUnlock(); return; } }catch(e){}
+  function build(){
+    const ov=document.createElement('div'); ov.id='authGate';
+    ov.innerHTML='<div class="ag-card"><img src="logo.png" class="ag-logo" alt="Second Chance CM"><div class="ag-title">Second Chance CM Dashboards</div><div class="ag-sub">Enter the team password to continue</div><input id="agPw" type="password" placeholder="Password" autocomplete="current-password"><button id="agBtn">Enter</button><div id="agErr"></div></div>';
+    document.body.appendChild(ov);
+    const submit=async()=>{ const h=await _sha(document.getElementById('agPw').value); if(h===SCCM_HASH){ try{localStorage.setItem('sccm_ok',SCCM_HASH);}catch(e){} ov.remove(); onUnlock(); } else { document.getElementById('agErr').textContent='Incorrect password. Try again.'; document.getElementById('agPw').value=''; document.getElementById('agPw').focus(); } };
+    document.getElementById('agBtn').onclick=submit;
+    document.getElementById('agPw').addEventListener('keydown',function(e){ if(e.key==='Enter') submit(); });
+    document.getElementById('agPw').focus();
+  }
+  if(document.body) build(); else document.addEventListener('DOMContentLoaded',build);
+}
+</script>
+</head>
+<body>
+
+<div class="dept-bar">
+  <div class="dept-bar-inner">
+    <span class="dept-brand">Second Chance CM</span>
+    <nav class="dept-links">
+      <a href="index.html">Care Coordinators</a>
+      <a href="intake.html">Intake</a>
+      <a href="alliant.html">Alliant</a>
+      <a href="medicaid.html">Medicaid</a>
+      <a href="ca.html">CA</a>
+      <a class="active">Scorecard</a>
+    </nav>
+  </div>
+</div>
+
+<div class="header">
+  <div class="brand-wrap"><img class="brand-logo" src="logo.png" alt="Second Chance Case Management"><div>
+    <h1>Second Chance CM · Team Scorecard</h1>
+    <p>Supervisor completion rates by month · live from sheet</p>
+  </div></div>
+  <div><span class="pill" id="asof"></span></div>
+</div>
+
+<div class="wrap">
+  <div class="note">
+    <b>Completion %</b> = (visits/calls completed + pending-doc items) ÷ monthly load, same definition as each department tab. Capped at 100%.
+    Each column is a month; the current month is marked <b>(in&nbsp;progress)</b> and climbs as work is logged. Blank = no tab for that month.
+  </div>
+
+  <div id="status">Loading scorecard from the Department Stats sheet…</div>
+  <div id="content" style="display:none">
+
+    <div class="sec-label">Care Coordinators</div>
+    <div class="card">
+      <h2>Supervisor Completion % by Month</h2>
+      <div class="sub">Courtney · Jennifer · Zukrat · Jarrett · Shuronda — each team's handled rate</div>
+      <div style="overflow-x:auto"><table class="sc" id="ccTable"></table></div>
+    </div>
+    <div class="card">
+      <h2>CC Supervisor Trend</h2>
+      <div class="sub">How each supervisor's team has trended across the months</div>
+      <div class="chart-box"><canvas id="ccChart"></canvas></div>
+    </div>
+
+    <div class="sec-label">Communications Analysts</div>
+    <div class="card">
+      <h2>Supervisor Completion % by Month</h2>
+      <div class="sub">Adijat · Jose — each team's handled rate</div>
+      <div style="overflow-x:auto"><table class="sc" id="caTable"></table></div>
+    </div>
+    <div class="card">
+      <h2>CA Supervisor Trend</h2>
+      <div class="sub">How each supervisor's team has trended across the months</div>
+      <div class="chart-box"><canvas id="caChart"></canvas></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const SHEET_ID='1HXYz9v9gU2HZ5wjaC5YKPxt1p9ReAPd3CyeuVvCA4hk';
+const NOW=new Date();
+const CUR_M=NOW.getMonth(); // 0-11
+
+// Month → candidate tab names (first that validates wins). Inconsistent naming per month, so listed explicitly;
+// future months include guess patterns so they auto-appear once the tab is created with a usual name.
+const CC_MONTHS=[
+  {key:'Jun', mi:5,  tabs:["CC Department June","CC Department Jun'26","CC Department June 26'"]},
+  {key:'Jul', mi:6,  tabs:["CC Department July 26","CC Department July 26'","CC Department July '26","CC Department Jul'26"]},
+  {key:'Aug', mi:7,  tabs:["CC Department August 26'","CC Department August 26","CC Department Aug'26"]},
+  {key:'Sep', mi:8,  tabs:["CC Department September 26'","CC Department September 26","CC Department Sep'26"]},
+  {key:'Oct', mi:9,  tabs:["CC Department October 26'","CC Department October 26","CC Department Oct'26"]},
+  {key:'Nov', mi:10, tabs:["CC Department November 26'","CC Department November 26","CC Department Nov'26"]},
+  {key:'Dec', mi:11, tabs:["CC Department December 26'","CC Department December 26","CC Department Dec'26"]}
+];
+const CA_MONTHS=[
+  {key:'Aug', mi:7,  tabs:["CA Department Aug'26","CA Department August'26","CA Department Aug 26'"]},
+  {key:'Sep', mi:8,  tabs:["CA Department Sep'26","CA Department September'26","CA Department Sep 26'"]},
+  {key:'Oct', mi:9,  tabs:["CA Department Oct'26","CA Department October'26","CA Department Oct 26'"]},
+  {key:'Nov', mi:10, tabs:["CA Department Nov'26","CA Department November'26"]},
+  {key:'Dec', mi:11, tabs:["CA Department Dec'26","CA Department December'26"]}
+];
+const CC_SUPS=['Courtney','Jennifer','Zukrat','Jarrett','Shuronda'];
+const CA_SUPS=['Jose','Adijat'];
+const SUP_COLOR={Courtney:'#2563eb',Jennifer:'#0d9488',Zukrat:'#9333ea',Jarrett:'#e8870d',Shuronda:'#db2777',Jose:'#1e6fa8',Adijat:'#6d28d9'};
+
+let _cb=0;
+function loadTab(tab){return new Promise(function(res,rej){
+  const cb='__gv'+(_cb++);const s=document.createElement('script');
+  const tm=setTimeout(function(){cl();rej(new Error('timeout'));},20000);
+  function cl(){clearTimeout(tm);delete window[cb];if(s.parentNode)s.parentNode.removeChild(s);}
+  window[cb]=function(r){cl();try{if(!r||!r.table)throw new Error('bad');res(tableToRows(r.table));}catch(e){rej(e);}};
+  s.onerror=function(){cl();rej(new Error('neterr'));};
+  s.src='https://docs.google.com/spreadsheets/d/'+SHEET_ID+'/gviz/tq?sheet='+encodeURIComponent(tab)+'&tqx=reqId:0;responseHandler:'+cb+';out:json&t='+Date.now();
+  document.head.appendChild(s);
+});}
+function cellStr(c){if(!c)return '';return (c.f!=null?c.f:(c.v==null?'':c.v));}
+function tableToRows(t){return [t.cols.map(c=>c.label||'')].concat(t.rows.map(r=>(r.c||[]).map(cellStr)));}
+const num=v=>{const n=parseFloat(String(v==null?'':v).replace(/[^0-9.\-]/g,''));return isNaN(n)?0:n;};
+
+// Try each candidate tab for a month; return rows of the first whose header matches, else null.
+async function resolveMonth(tabs, headerNeedle){
+  for(const nm of tabs){
+    try{ const rows=await loadTab(nm);
+      if(rows && rows[0] && String(rows[0][0]||'').indexOf(headerNeedle)!==-1) return rows;
+    }catch(e){}
+  }
+  return null;
+}
+
+// CC: name=0, load=col2, completed=4+7+10+13+16, pending=18. Supervisors are marker rows (blank numbers).
+function ccTeams(rows){
+  const teams={}; CC_SUPS.forEach(s=>teams[s]={load:0,done:0});
+  let cur='Courtney';
+  for(let i=1;i<rows.length;i++){
+    const name=String(rows[i][0]==null?'':rows[i][0]).trim();
+    if(!name) continue;
+    if(CC_SUPS.indexOf(name)!==-1){ cur=name; continue; }
+    const load=num(rows[i][2]);
+    if(load<=0) continue;
+    const comp=num(rows[i][4])+num(rows[i][7])+num(rows[i][10])+num(rows[i][13])+num(rows[i][16]);
+    const pend=num(rows[i][18]);
+    teams[cur].load+=load; teams[cur].done+=(comp+pend);
+  }
+  return teams;
+}
+// CA: name=0, load=col2, completed=4..8, pending=10. Jose's block first, 'Adijat' marker starts Adijat's block, 'Total' ends.
+function caTeams(rows){
+  const teams={Jose:{load:0,done:0},Adijat:{load:0,done:0}};
+  let cur='Jose';
+  for(let i=1;i<rows.length;i++){
+    const name=String(rows[i][0]==null?'':rows[i][0]).trim();
+    if(!name) continue;
+    if(name==='Total') break;
+    if(name==='Adijat'){ cur='Adijat'; continue; }
+    if(name==='Jose'){ cur='Jose'; continue; }
+    const load=num(rows[i][2]);
+    if(load<=0) continue;
+    const comp=num(rows[i][4])+num(rows[i][5])+num(rows[i][6])+num(rows[i][7])+num(rows[i][8]);
+    const pend=num(rows[i][10]);
+    teams[cur].load+=load; teams[cur].done+=(comp+pend);
+  }
+  return teams;
+}
+function pct(t){ return (t && t.load>0) ? Math.min(100,Math.round(t.done/t.load*100)) : null; }
+function pColor(p){ if(p==null)return '#cbd5e1'; if(p>=95)return '#166534'; if(p>=90)return '#0f766e'; if(p>=80)return '#92400e'; return '#991b1b'; }
+function pBg(p){ if(p==null)return 'transparent'; if(p>=95)return '#dcfce7'; if(p>=90)return '#ccfbf1'; if(p>=80)return '#fef3c7'; return '#fee2e2'; }
+function cellHtml(p){ if(p==null) return '<span class="pblank">—</span>'; return '<span class="pcell" style="color:'+pColor(p)+';background:'+pBg(p)+'">'+p+'%</span>'; }
+
+function buildTable(el, sups, monthsPresent, perMonthTeams){
+  // header
+  let h='<thead><tr><th>Supervisor</th>';
+  monthsPresent.forEach(m=>{ h+='<th class="'+(m.mi===CUR_M?'live':'')+'">'+m.key+(m.mi===CUR_M?'<br><span style="font-weight:700;font-size:9px">(in&nbsp;progress)</span>':'')+'</th>'; });
+  h+='</tr></thead><tbody>';
+  sups.forEach(sup=>{
+    h+='<tr><td>'+sup+'</td>';
+    monthsPresent.forEach(m=>{ h+='<td>'+cellHtml(pct(perMonthTeams[m.key][sup]))+'</td>'; });
+    h+='</tr>';
+  });
+  // overall row
+  h+='<tr class="overall"><td>Department overall</td>';
+  monthsPresent.forEach(m=>{
+    let L=0,D=0; sups.forEach(s=>{const t=perMonthTeams[m.key][s]; if(t){L+=t.load;D+=t.done;}});
+    h+='<td>'+cellHtml(L>0?Math.min(100,Math.round(D/L*100)):null)+'</td>';
+  });
+  h+='</tr></tbody>';
+  el.innerHTML=h;
+}
+function buildChart(canvasId, sups, monthsPresent, perMonthTeams){
+  const labels=monthsPresent.map(m=>m.key);
+  const datasets=sups.map(sup=>({
+    label:sup,
+    data:monthsPresent.map(m=>pct(perMonthTeams[m.key][sup])),
+    borderColor:SUP_COLOR[sup]||'#555', backgroundColor:SUP_COLOR[sup]||'#555',
+    tension:.3, pointRadius:4, spanGaps:true
+  }));
+  new Chart(document.getElementById(canvasId),{type:'line',
+    data:{labels,datasets},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom'}},
+      scales:{y:{min:0,max:100,ticks:{callback:v=>v+'%'},grid:{color:'#f1f5f9'}}}}
+  });
+}
+
+requireAuth(async function(){
+  try{
+    document.getElementById('asof').textContent='As of '+NOW.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+    // Resolve every month up to the current month (skip future months).
+    const ccWanted=CC_MONTHS.filter(m=>m.mi<=CUR_M);
+    const caWanted=CA_MONTHS.filter(m=>m.mi<=CUR_M);
+    const ccRes=await Promise.all(ccWanted.map(m=>resolveMonth(m.tabs,'Care Coordinator')));
+    const caRes=await Promise.all(caWanted.map(m=>resolveMonth(m.tabs,'Communications Analyst')));
+
+    const ccMonths=[], ccData={};
+    ccWanted.forEach((m,i)=>{ if(ccRes[i]){ ccMonths.push(m); ccData[m.key]=ccTeams(ccRes[i]); } });
+    const caMonths=[], caData={};
+    caWanted.forEach((m,i)=>{ if(caRes[i]){ caMonths.push(m); caData[m.key]=caTeams(caRes[i]); } });
+
+    if(!ccMonths.length && !caMonths.length) throw new Error('No monthly tabs could be read.');
+
+    buildTable(document.getElementById('ccTable'), CC_SUPS, ccMonths, ccData);
+    buildTable(document.getElementById('caTable'), CA_SUPS, caMonths, caData);
+    buildChart('ccChart', CC_SUPS, ccMonths, ccData);
+    buildChart('caChart', CA_SUPS, caMonths, caData);
+
+    document.getElementById('status').style.display='none';
+    document.getElementById('content').style.display='block';
+  }catch(e){
+    const s=document.getElementById('status'); s.className='err';
+    s.innerHTML='Could not load the scorecard: '+e.message+'. Reload to retry.';
+  }
+});
+</script>
+</body>
+</html>
